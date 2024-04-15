@@ -1,8 +1,13 @@
-#!/bin/bash
+#!/bin/sh
+cd ~ || exit
+curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
+sudo bash nodesource_setup.sh
+
 WEB_SERVER="$1"
 DB="$2"
 INSTALL="$3"
 VPN="$4"
+MARIADBPASSWORD="$5"
 if [ "$WEB_SERVER" = "apache" ]; then
     echo "Instalando Apache..."
 elif [ "$WEB_SERVER" = "nginx" ]; then
@@ -40,6 +45,9 @@ else
     exit 1
 fi
 
+sudo mkdir /var/www/
+sudo mkdir /var/www/html
+
 # Instalar sudo
 apt -y install sudo
 
@@ -47,43 +55,26 @@ apt -y install sudo
 sudo dpkg -l | grep php | tee packages.txt
 
 # Add Ondrej's repo source and signing key along with dependencies
-sudo apt install apt-transport-https
+sudo apt -y update && sudo apt upgrade -y
+sudo apt install -y apt-transport-https ca-certificates gnupg2 software-properties-common lsb-release
+
 sudo curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
 sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
 
-sudo add-apt-repository ppa:ondrej/php # Press enter when prompted.
+sudo add-apt-repository -y ppa:ondrej/php <<EOF
 
-sudo apt update
+EOF
 
-# Install new PHP 8.3 packages
-sudo apt install php8.3 php8.3-cli php8.3-{bz2,curl,mbstring,intl}
-
-# Install FPM OR Apache module
-sudo apt install php8.3-fpm
-# OR
-# sudo apt install libapache2-mod-php8.3
-
-# On Apache: Enable PHP 8.3 FPM
-sudo a2enconf php8.3-fpm
-# When upgrading from an older PHP version:
-sudo a2disconf php8.2-fpm
-sudo a2disconf php8.1-fpm
-
-
-
+sudo apt -y update
 ## Remove old packages
-sudo apt purge php8.2*
-# Remove old packages
-sudo apt purge php8.2*
-sudo apt purge php8.1*
-sudo apt purge php8.0*
+sudo apt -y purge php8.3*
+
+sudo apt -y purge php8.2*
+sudo apt -y purge php8.1*
+sudo apt -y purge php8.0*
 
 # Instalar curl y wget
 sudo apt install -y curl wget
-
-# Actualizar e instalar los paquetes necesarios
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y apt-transport-https ca-certificates gnupg2 software-properties-common
 
 # Descargar la clave GPG para el repositorio de PHP
 sudo wget -qO /etc/apt/trusted.gpg.d/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
@@ -104,41 +95,36 @@ echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sou
 sudo apt update && sudo apt upgrade -y
 
 # Instalar PHP y las extensiones necesarias
-sudo apt install -y php8.3 php8.3-fpm php8.3-mysql php8.3-curl php8.3-gd php8.3-imagick php8.3-intl php8.3-mysql php8.3-mbstring php8.3-xml php8.3-mcrypt php8.3-zip php8.3-ldap libapache2-mod-php8.3 php8.3-sybase php8.3-opcache php8.3-pgsql php8.3-redis
+sudo apt install -y php8.3-common php8.3 php8.3-fpm php8.3-mysql php8.3-curl php8.3-gd php8.3-imagick php8.3-intl php8.3-mysql php8.3-mbstring php8.3-xml php8.3-mcrypt php8.3-zip php8.3-ldap libapache2-mod-php8.3 php8.3-sybase php8.3-opcache php8.3-pgsql php8.3-redis php8.3-common php8.3 php8.3-cli php8.3-curl php8.3-bz2 php8.3-xml php8.3-mysql php8.3-gd php8.3-imagick php-bz2 php8.3-mbstring php8.3-intl php8.3-opcache php8.3-curl php-curl php-zip php8.3-zip php-ssh2 php8.3-ssh2 php-xmlrpc php-xml php-curl php-mbstring php8.3-fpm   unixodbc-dev --allow-unauthenticated
+sudo systemctl restart php8.3-fpm && sudo systemctl enable php8.3-fpm
+# OR
+# sudo apt install libapache2-mod-php8.3
+# When upgrading from an older PHP version:
 
-# Instalar php8.3-sql
-sudo apt install -y php8.3-sql 
+sudo a2disconf php8.2-fpm
+sudo a2disconf php8.1-fpm
+sudo a2disconf php8.0-fpm
+# On Apache: Enable PHP 8.2 FPM
+sudo a2enconf php8.3-fpm
 
-sudo apt install -y php-opcache
-sudo apt install -y php8.3-opcache
-sudo apt install -y php8.3-curl
-sudo apt install -y php-curl
-sudo apt install -y php-zip
-sudo apt install -y php8.3-zip
-sudo apt-get -y install php-ssh2
-sudo apt-get -y install php8.3-ssh2
-sudo apt install php-xml -y
-sudo systemctl restart php8.3-fpm 
-sudo apt install php-curl -y
-sudo apt install php-mbstring -y
-
-
-# Solucionar problemas de php8.3 mysql sql
-# Hay un error en la siguiente línea. Debe ser dividido en dos comandos separados
-sudo apt install software-properties-common
-sudo add-apt-repository ppa:ondrej/php
-sudo apt update
 sudo apt-get install php-pear
 sudo pecl channel-update pecl.php.net
 
-# Este parece ser incorrecto. En su lugar, puedes hacer referencia a /usr/bin/php8.3 (o el camino correcto a tu binario PHP).
-#pear config-set php_bin "/usr/lib/cgi-bin/php8.3"
+sudo systemctl restart php8.3-fpm && sudo systemctl enable php8.3-fpm
+
+
 sudo pear config-set php_bin /usr/bin/php8.3
 
 # Añadir la clave de Microsoft
 sudo curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 
 # Añadir los repositorios de Microsoft
+sudo pecl install sqlsrv
+sudo pecl install pdo_sqlsrv
+sudo pecl install pdo_mysql
+sudo pecl install pdo_pgsql
+sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
+
 sudo curl https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list
 sudo curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
 sudo curl https://packages.microsoft.com/config/debian/9/prod.list > /etc/apt/sources.list.d/mssql-release.list
@@ -161,19 +147,19 @@ sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
 sudo apt -y install gcc g++ make
 
 
-
-curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
-sudo apt install nodejs
+curl -fsSL https://deb.nodesource.com/setup_21.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs
 
 wget https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh
 bash install.sh
 source ~/.bashrc
+. ~/.bashrc
 nvm list-remote 
 
-nvm install v18
+nvm install v21
 nvm install node
-nvm use 18
-nvm alias default 18
+nvm use 21
+nvm alias default 21
 
 
 if [ "$WEB_SERVER" = "apache" ]; then
@@ -183,10 +169,13 @@ if [ "$WEB_SERVER" = "apache" ]; then
 	sudo systemctl stop nginx
 	sudo apt install -y apache2
 	sudo a2enmod proxy_fcgi setenvif
-	sudo a2enconf php8.3-fpm
+	sudo a2enconf php8.2-fpm
 	sudo a2disconf php8.1-fpm
+	sudo a2disconf php8-fpm
 	sudo a2dismod php8.1
+	sudo a2dismod php8.2
 	sudo a2dismod php8.3
+	sudo a2enconf php8.3-fpm
 	sudo systemctl enable php8.3-fpm
 	sudo systemctl reload apache2
 	sudo service apache2 restart
@@ -219,7 +208,7 @@ sudo chmod -R 777 /var/www/html
 echo 'anadir apache web control'
 sudo wget https://excellmedia.dl.sourceforge.net/project/apachegui/1.12-Linux-Solaris-Mac/ApacheGUI-1.12.0.tar.gz
 sudo tar -xzvf ApacheGUI-1.12.0.tar.gz -C /usr/local/
-cd /usr/local/ApacheGUI/bin
+cd /usr/local/ApacheGUI/bin || exit
 sudo ./run.sh
 	
 elif [ "$WEB_SERVER" = "nginx" ]; then
@@ -229,19 +218,22 @@ elif [ "$WEB_SERVER" = "nginx" ]; then
 	sudo a2enconf php8.3-fpm
 	sudo a2disconf php8.1-fpm
 	sudo a2dismod php8.1
-	sudo a2dismod php8.3
+	sudo a2dismod php8.2
 	sudo systemctl enable php8.3-fpm
-	sudo systemctl reload apache2
-	sudo service apache2 restart
-	sudo service php8.3-fpm restart
 	sudo systemctl stop apache2
-	sudo service stop restart
+	sudo service apache2 stop
+	sudo service php8.2-fpm restart
+
 	sudo apt -y purge apache2 apache2-utils
 	sudo apt -y remove apache2 apache2-utils
 	sudo apt -y autoremove apache2 apache2-utils
 
 	sudo apt list nginx
 	sudo apt -y install nginx
+	sudo -y apt-get install nginx-extras
+	sudo apt -y install nginx-*
+	sudo rm -rf /var/www/html/
+	sudo mkdir -p /var/www/html
 	
 	sudo chmod 755 -R /var/www/html/
 	sudo chown www-data:www-data -R /var/www/html/
@@ -249,7 +241,8 @@ elif [ "$WEB_SERVER" = "nginx" ]; then
 	#backup conf
 	echo 'hacemos una copia de nginx conf antes de poner la nueva'
 	sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
-	sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup
+	sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.back
+	sudo mv /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/default.back
 
 
 # Crear un nuevo archivo de configuración con todas las optimizacion de gzip para aumentar velocidad de carga
@@ -261,46 +254,113 @@ error_log /var/log/nginx/error.log;
 include /etc/nginx/modules-enabled/*.conf;
 
 events {
-        worker_connections 768;
-        # multi_accept on;
+    worker_connections 768;
+	multi_accept on;
 }
 
 http {
-        sendfile on;
-        tcp_nopush on;
-        types_hash_max_size 2048;
-        include /etc/nginx/mime.types;
-        default_type application/octet-stream;
+    sendfile on;
+	tcp_nopush on;
+	tcp_nodelay on;
+	client_header_timeout 3m;
+	client_body_timeout 3m;
+	client_max_body_size 256m;
+	client_header_buffer_size 4k;
+	client_body_buffer_size 256k;
+	large_client_header_buffers 4 32k;
+	send_timeout 3m;
+	keepalive_timeout 60 60;
+	reset_timedout_connection       on;
+	server_names_hash_max_size 1024;
+	server_names_hash_bucket_size 1024;
+	ignore_invalid_headers on;
+	connection_pool_size 256;
+	request_pool_size 4k;
+	output_buffers 4 32k;
+	postpone_output 1460;
 
-        ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
-        ssl_prefer_server_ciphers on;
+	include mime.types;
+	default_type application/octet-stream;
 
-        access_log /var/log/nginx/access.log;
+	# SSL Settings
+	ssl_session_cache   shared:SSL:10m;
+	ssl_protocols       TLSv1 TLSv1.1 TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
+	ssl_prefer_server_ciphers on;
+	ssl_ciphers        "EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA!RC4:EECDH:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS";
 
-        gzip on;
+    access_log /var/log/nginx/access.log;
 
-         gzip_vary on;
-         gzip_proxied any;
-         gzip_proxied expired no-cache no-store private auth;
-         gzip_comp_level 9;
-         gzip_buffers 16 8k;
-         gzip_http_version 1.1;
-         gzip_min_length 256;
-         gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss application/atom+xml application/geo+json application/x-javascript application/json application/ld+json applica>
-         gzip_disable "MSIE [1-6]\.";
+    gzip on;
 
-        include /etc/nginx/conf.d/*.conf;
-        include /etc/nginx/sites-enabled/*;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_proxied expired no-cache no-store private auth;
+    gzip_comp_level 9;
+    gzip_buffers 8 64k;
+    gzip_http_version 1.1;
+    gzip_min_length 256;
+    gzip_types text/plain text/css application/javascript text/xml application/xml application/xml+rss application/atom+xml application/geo+json application/x-javascript application/ld+json application/geo+json; # Se eliminó la duplicación de "application/json"
+    gzip_disable "MSIE [1-6]\.";
+
+
+	# Proxy settings
+	proxy_redirect      off;
+	proxy_set_header    Host            \$host;
+	proxy_set_header    X-Real-IP       \$remote_addr;
+	proxy_set_header    X-Forwarded-For \$proxy_add_x_forwarded_for;
+	proxy_pass_header   Set-Cookie;
+	proxy_connect_timeout   300;
+	proxy_send_timeout  300;
+	proxy_read_timeout  300;
+	proxy_buffers       32 4k;
+	proxy_cache_path /var/cache/nginx levels=2 keys_zone=cache:10m inactive=60m max_size=512m;
+	proxy_cache_key "\$host\$request_uri \$cookie_user";
+	proxy_temp_path  /var/cache/nginx/temp;
+	proxy_ignore_headers Expires Cache-Control;
+	proxy_cache_use_stale error timeout invalid_header http_502;
+	proxy_cache_valid any 1d;
+
+	open_file_cache_valid 120s;
+	open_file_cache_min_uses 2;
+	open_file_cache_errors off;
+	open_file_cache max=5000 inactive=30s;
+	open_log_file_cache max=1024 inactive=30s min_uses=2;
+
+# Logs
+log_format main "\$remote_addr - \$remote_user [\$time_local] \$request \$status \$body_bytes_sent \$http_referer \$http_user_agent \$http_x_forwarded_for"; 
+log_format bytes "\$body_bytes_sent"; 
+#access_log          /var/log/nginx/access.log main;
+
+access_log off;
+
+
+	# Cache bypass
+map \$http_cookie \$no_cache {
+	default 0;
+	~SESS 1;
+	~wordpress_logged_in 1;
+}
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-available/*.conf;
+	include /etc/nginx/cloudflare.inc;
+	include /etc/nginx/fastcgi_params;
+}
+stream {
+    include /etc/nginx/stream.conf.d/*.conf;    
+#        include /etc/nginx/cloudflare.inc;
+#        include /etc/nginx/fastcgi_params;
 }
 EOL'
 echo 'config con exito'
 
+
 # Crear un nuevo archivo de configuración
 echo 'Crear un nuevo archivo de configuración nginx MEJORADO'
-sudo bash -c 'cat > /etc/nginx/sites-available/default << EOL
+sudo bash -c 'cat > /etc/nginx/sites-available/default.conf << EOL
 server {
-        listen 80 default_server;
-        listen [::]:80 default_server;
+        listen 80;
+        listen [::]:80;
 
         root /var/www/html/public;
 
@@ -315,7 +375,34 @@ server {
 
         location ~ \\.php$ {
                 include snippets/fastcgi-php.conf;
-     
+
+                fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        #       fastcgi_pass 127.0.0.1:9000;
+        }
+}
+
+EOL'
+
+sudo bash -c 'cat >  /etc/nginx/sites-available/phpmyadmin.conf << EOL
+server {
+    listen 8081;
+        listen [::]:8081;
+    server_name localhost; # Cambia el nombre de servidor si es necesario.
+
+    root /var/www/phpmyadmin;
+
+    index index.html index.htm index.nginx-debian.html index.php;
+
+
+
+        location / {
+                try_files \$uri \$uri/ /index.php?\$query_string;
+        }
+
+
+        location ~ \\.php$ {
+                include snippets/fastcgi-php.conf;
+
                 fastcgi_pass unix:/run/php/php8.3-fpm.sock;
         #       fastcgi_pass 127.0.0.1:9000;
         }
@@ -323,11 +410,154 @@ server {
 EOL'
 
 
+# Descarga las listas de IPs de Cloudflare (IPv4 e IPv6) y concatena en un solo archivo
+curl -sL https://www.cloudflare.com/ips-v4/ https://www.cloudflare.com/ips-v6/ | cat > ipscloudflare.txt
+
+# Ruta al archivo de inclusiones de Cloudflare
+cloudflare_inc_file="/etc/nginx/cloudflare.inc"
+
+# Genera el archivo de inclusiones de Cloudflare
+{ 
+  echo "# Cloudflare https://www.cloudflare.com/ips"
+  grep -E -o '([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}|([0-9a-fA-F]{1,4}:){3,7}[0-9a-fA-F]{1,4}/[0-9]{1,3}' ipscloudflare.txt | while read ip; do
+    echo "set_real_ip_from $ip;"
+  done
+  echo "real_ip_header CF-Connecting-IP;"
+} > "$cloudflare_inc_file"
+
+# Habilita IPv6 en Nginx
+sed -i 's/#\s*use\s*ipv6;/use\s*ipv6;/' /etc/nginx/nginx.conf
+
+# Mensaje de aviso
+echo "¡ATENCIÓN! Revisa el archivo $cloudflare_inc_file para confirmar que se han generado las IPs IPv4 e IPv6 correctamente."
+
+
+
+
+# Definir la ruta del archivo mimes.types
+mime_file="/etc/nginx/mime.types"
+
+# Verificar si el archivo ya existe y realizar una copia de seguridad si es necesario
+if [ -f "$mime_file" ]; then
+    cp "$mime_file" "$mime_file.bak"
+fi
+
+# Escribir el contenido en el archivo mimes.types
+cat << EOF > "$mime_file"
+types {
+    text/html                                        html htm shtml;
+    text/css                                         css;
+    text/xml                                         xml;
+    image/gif                                        gif;
+    image/jpeg                                       jpeg jpg;
+    application/javascript                           js;
+    application/atom+xml                             atom;
+    application/rss+xml                              rss;
+
+    text/mathml                                      mml;
+    text/plain                                       txt;
+    text/vnd.sun.j2me.app-descriptor                 jad;
+    text/vnd.wap.wml                                 wml;
+    text/x-component                                 htc;
+
+    image/png                                        png;
+    image/svg+xml                                    svg svgz;
+    image/tiff                                       tif tiff;
+    image/vnd.wap.wbmp                               wbmp;
+    image/webp                                       webp;
+    image/x-icon                                     ico;
+    image/x-jng                                      jng;
+    image/x-ms-bmp                                   bmp;
+
+    font/woff                                        woff;
+    font/woff2                                       woff2;
+
+    application/java-archive                         jar war ear;
+    application/json                                 json;
+    application/mac-binhex40                         hqx;
+    application/msword                               doc;
+    application/pdf                                  pdf;
+    application/postscript                           ps eps ai;
+    application/rtf                                  rtf;
+    application/vnd.apple.mpegurl                    m3u8;
+    application/vnd.google-earth.kml+xml             kml;
+    application/vnd.google-earth.kmz                 kmz;
+    application/vnd.ms-excel                         xls;
+    application/vnd.ms-fontobject                    eot;
+    application/vnd.ms-powerpoint                    ppt;
+    application/vnd.oasis.opendocument.graphics      odg;
+    application/vnd.oasis.opendocument.presentation  odp;
+    application/vnd.oasis.opendocument.spreadsheet   ods;
+    application/vnd.oasis.opendocument.text          odt;
+    application/vnd.openxmlformats-officedocument.presentationml.presentation
+                                                     pptx;
+    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+                                                     xlsx;
+    application/vnd.openxmlformats-officedocument.wordprocessingml.document
+                                                     docx;
+    application/vnd.wap.wmlc                         wmlc;
+    application/wasm                                 wasm;
+    application/x-7z-compressed                      7z;
+    application/x-cocoa                              cco;
+    application/x-java-archive-diff                  jardiff;
+    application/x-java-jnlp-file                     jnlp;
+    application/x-makeself                           run;
+    application/x-perl                               pl pm;
+    application/x-pilot                              prc pdb;
+    application/x-rar-compressed                     rar;
+    application/x-redhat-package-manager             rpm;
+    application/x-sea                                sea;
+    application/x-shockwave-flash                    swf;
+    application/x-stuffit                            sit;
+    application/x-tcl                                tcl tk;
+    application/x-x509-ca-cert                       der pem crt;
+    application/x-xpinstall                          xpi;
+    application/xhtml+xml                            xhtml;
+    application/xspf+xml                             xspf;
+    application/zip                                  zip;
+
+    application/octet-stream                         bin exe dll;
+    application/octet-stream                         deb;
+    application/octet-stream                         dmg;
+    application/octet-stream                         iso img;
+    application/octet-stream                         msi msp msm;
+
+    audio/midi                                       mid midi kar;
+    audio/mpeg                                       mp3;
+    audio/ogg                                        ogg;
+    audio/x-m4a                                      m4a;
+    audio/x-realaudio                                ra;
+
+    video/3gpp                                       3gpp 3gp;
+    video/mp2t                                       ts;
+    video/mp4                                        mp4;
+    video/mpeg                                       mpeg mpg;
+    video/quicktime                                  mov;
+    video/webm                                       webm;
+    video/x-flv                                      flv;
+    video/x-m4v                                      m4v;
+    video/x-mng                                      mng;
+    video/x-ms-asf                                   asx asf;
+    video/x-ms-wmv                                   wmv;
+    video/x-msvideo                                  avi;
+}
+EOF
+
+# Imprimir un mensaje de éxito
+echo "Archivo mimes.types generado con éxito en $mime_file"
+
+
+sudo ufw allow 8081
+
 echo 'config con exito'
 
+# Iniciar y habilitar PHP-FPM
+systemctl start php8.3-fpm
+systemctl enable php8.3-fpm
 
 # Reiniciar Nginx
-sudo systemctl restart nginx
+systemctl restart nginx 
+
 	
 	# Nginx webGui, el panel de control para nginx sin tocar el root del servidor. Ademas se pueden crear varios vhost o proxys ilimitados
 	curl -L -s https://raw.githubusercontent.com/0xJacky/nginx-ui/master/install.sh -o installgui.sh
@@ -341,7 +571,7 @@ fi
 
 #Composer Install
 sudo apt install -y curl php-cli php-mbstring git unzip
-cd ~
+cd ~ || exit
 curl -sS https://getcomposer.org/installer -o composer-setup.php
 HASH=`curl -sS https://composer.github.io/installer.sig`
 php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
@@ -391,52 +621,65 @@ sudo systemctl restart nginx
 echo 'Pasamos a Mariadb'
 if [ "$DB" = "none" ]; then
     echo "Sin MariaDB...."
-elif [ "$DB" = "appnetd_cloud" ]; then
+elif [ "$DB" != "" ]; then
     echo "Instalar MariaDB y crear tabla appnetd_cloud"
+
+if [ -z "$MARIADBPASSWORD" ]; then
+    MARIADBPASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12 ; echo '')
+fi
+
+echo "creo mysql carpeta"
+	sudo mkdir /etc/mysql
+	sudo chmod 755 /etc/mysql
+
 	# Actualiza los paquetes del sistema
+	sudo apt-key adv --fetch-keys 'https://mariadb.org/mariadb_release_signing_key.asc'
+	sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirror.23media.com/mariadb/repo/10.7/ubuntu jammy main'<<EOF
+
+EOF
 	sudo apt update
+echo "Instalo mariadb"
 
-	# Instala MariaDB
-	sudo apt install -y mariadb-server
-
+	sudo apt-get -y install mariadb-server mariadb-client mariadb-*
+echo "ejecuto secure"
 # Ejecuta el script de seguridad de MySQL
 sudo mysql_secure_installation <<EOF
 
 y
-Cvlss2101281613
-Cvlss2101281613
 y
+$MARIADBPASSWORD
+$MARIADBPASSWORD
 y
+n
 y
 y
 EOF
+
 echo " MAriadb Instalado, paro a la config"
 	# Inicia el servidor MariaDB
+	sudo systemctl stop mariadb
 	sudo systemctl start mariadb
 	sudo systemctl enable mariadb
 
-	# Crea la base de datos "appnetd_cloud"
-	echo "CREATE DATABASE appnetd_cloud;" | mysql -u root -p'Cvlss2101281613'
+	# Crea la base de datos 
+	echo "CREATE DATABASE ${DB};" | mysql -uroot -p"${MARIADBPASSWORD}"
+
+
 	# Define tu contraseña
-	ROOT_PASSWORD="Cvlss2101281613"
-echo "cambiar contraseña root"
-	# Cambia la contraseña de root
-	sudo mysql -u root <<-EOF
-	ALTER USER 'root'@'localhost' IDENTIFIED BY '$ROOT_PASSWORD';
-	FLUSH PRIVILEGES;
-	EOF
 
-	
-	DB_NAME="appnetd_cloud"
-	DB_USER="root"
-echo "crear el usuario dar permisos"
+echo "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MARIADBPASSWORD}';" | mysql -uroot -p"${MARIADBPASSWORD}"
 
-	# Iniciar sesión en MySQL/MariaDB como root
-	mysql -u root -p$ROOT_PASSWORD <<EOF
--- Crear el usuario y otorgar los permisos
-GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%' IDENTIFIED BY '$ROOT_PASSWORD';
-FLUSH PRIVILEGES;
-EOF
+# Generar usuario y contraseña aleatorios
+NEW_USERNAME="usuario$(date +%s)"
+NEW_PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12 ; echo '')
+
+# Asignar usuario y contraseña a la base de datos
+echo "CREATE USER '${NEW_USERNAME}'@'localhost' IDENTIFIED BY '${NEW_PASSWORD}';" | mysql -uroot -p"${MARIADBPASSWORD}" "${DB}"
+echo "GRANT ALL PRIVILEGES ON ${DB}.* TO '${NEW_USERNAME}'@'localhost';" | mysql -uroot -p"${MARIADBPASSWORD}" "${DB}"
+
+# Mostrar usuario y contraseña generados
+echo "Usuario: ${NEW_USERNAME}"
+echo "Contraseña: ${NEW_PASSWORD}"
 
 
 # # Iniciar sesión en MySQL/MariaDB como root y ejecutar el comando SQL
@@ -487,7 +730,7 @@ fi
 
 # Agrega el repositorio de Webmin
 echo 'install webmin'
-cd /tmp
+cd /tmp || exit
 
 echo "deb http://download.webmin.com/download/repository sarge contrib" | sudo tee /etc/apt/sources.list.d/webmin.list
 
@@ -543,22 +786,34 @@ elif [ "$INSTALL" != "" ]; then
     echo 'Instalando appnetd_cloud y limpiar antes de empezar'
 
 
-	cd /var/www/html
+	cd /var/www/ || exit
 	rm -rf *
 	rm -rf .*
 	sudo apt install -y wget zip
 	wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
+	sudo unzip phpMyAdmin-5.2.1-all-languages.zip
+	mv phpMyAdmin-5.2.1-all-languages phpmyadmin
+	mkdir /var/www/html/
+	cd /var/www/html/ || exit
 	
 	echo 'clonar proyecto desde git'
-	git clone -b "$INSTALL" https://liviudiaconu@appnet.dev:lss281613858715@github.com/AppNetDeveloper/Cloud-AppNet-Developer.git /var/www/html > /var/www/log.txt
+	git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Cloud-AppNet-Developer.git /var/www/html > /var/www/log.txt
 	echo 'instalar .env'
 	cp .env.example .env
+	# Ruta del archivo .env
+	ENV_FILE=".env"
+
+	# Utilizar sed para reemplazar la línea que contiene DB_PASSWORD
+	sed -i "s/^\(DB_DATABASE=\).*/\1${DB}/" "$ENV_FILE"
+	sed -i "s/^\(DB_USERNAME=\).*/\1${NEW_USERNAME}/" "$ENV_FILE"
+	sed -i "s/^\(DB_PASSWORD=\).*/\1${NEW_PASSWORD}/" "$ENV_FILE"
 	export COMPOSER_ALLOW_SUPERUSER=1
 	/usr/local/bin/composer update
 	echo 'generar con artisan todo lo de la base mysql necesario'
 	/usr/bin/npm install -g vite
 	php artisan key:generate
-	php artisan migrate:fresh 
+	php artisan migrate
+    php artisan db:seed
 	#php artisan db:seed UsersAndPermissionsSeeder
 	#php artisan db:seed StopCategorySeeder
 	#php artisan db:seed StopTypeSeeder
@@ -640,9 +895,13 @@ fi
 if [ "$DB" = "none" ]; then
     echo 'Sin anadir MariaDb '
 elif [ "$DB" = "appnetd_cloud" ]; then
-    echo 'MariaDb agregada con exito root password: Cvlss2101281613 donde el root tiene la opcion de remote host'
+    echo 'MariaDb agregada con exito root password: '"$MARIADBPASSWORD"' donde el root tiene la opcion de remote host'
+	# Mostrar usuario y contraseña generados
+echo "Nuevo usuario y contraseña generado para la ${DB}"
+echo "Usuario: ${NEW_USERNAME}"
+echo "Contraseña: ${NEW_PASSWORD}"
 else
-    echo "Por favor especifica none o uma en instalacion "
+    echo "Por favor especifica none o una tabla de MariaDB en instalacion "
     exit 1
 fi
 
@@ -651,4 +910,6 @@ echo 'Contraseña de Jenkins:'
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 echo 'jenkins interface : ip:8080'
 echo 'servidor web es ip con la ruta de los archivos /www/var/html'
+
+
 

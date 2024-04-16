@@ -861,6 +861,8 @@ elif [ "$INSTALL" != "" ]; then
 	/usr/local/bin/composer update
 	/usr/bin/npm run prod
 	echo 'dar los permisos necesario'
+ 	sudo rm -rf /var/www/html/public/storage
+  	sudo php artisan storage:link
 	sudo chmod -R 777 /var/www
 	sudo chmod -R 777 *
 	sudo chmod -R 777 storage

@@ -615,14 +615,14 @@ sudo apt install -y nodejs npm
 
 
 # Añade las líneas al archivo www.conf
-echo "pm = dynamic" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
 echo "pm.max_children = 250" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "pm.start_servers = 10" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "pm.min_spare_servers = 5" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "pm.max_spare_servers = 20" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "pm.max_requests = 5000" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "memory_limit = 512M" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "process.priority = 99" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
+echo "pm.max_requests = 500" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
+echo "pm.start_servers = 50" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
+echo "pm.min_spare_servers = 50" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
+echo "pm.max_spare_servers = 200" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
+echo "process.priority = -19" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
+echo "php_value[memory_limit] = 512M" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
+
 
 # Añade las líneas al archivo php.ini
 echo "memory_limit=4096M" | sudo tee -a /etc/php/8.3/cli/php.ini

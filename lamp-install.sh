@@ -832,7 +832,7 @@ elif [ "$INSTALL" != "" ]; then
 	cd /var/www/html/ || exit
 	
 	echo 'clonar proyecto desde git'
-	git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Gestion-v3.1 /var/www/html > /var/www/log.txt
+	git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Gestion-v3.1.git /var/www/html > /var/www/log.txt
 	echo 'instalar .env'
 	cp .env.example .env
 	# Ruta del archivo .env

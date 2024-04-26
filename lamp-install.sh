@@ -32,9 +32,6 @@ fi
 echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
 
 
-curl -sL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
-sudo bash nodesource_setup.sh
-
 WEB_SERVER="$1"
 DB="$2"
 INSTALL="$3"
@@ -108,6 +105,308 @@ sudo apt -y purge php8.0*
 # Instalar curl y wget
 sudo apt install -y curl wget
 
+# Install ffmpeg
+
+
+# Clonar el repositorio de fdk-aac
+git clone https://github.com/mstorsjo/fdk-aac && \
+cd fdk-aac && \
+autoreconf -fiv && \
+./configure --enable-shared && \
+make -j4 && \
+sudo make install && sudo ldconfig
+
+
+# Instalar dependencias
+sudo apt-get -y install autoconf build-essential libass-dev libdav1d-dev libmp3lame-dev yasm libopus-dev openssl libssl-dev
+
+# Obtener otras dependencias
+sudo apt-get -y update -qq
+sudo apt-get -y install \
+autoconf \
+automake \
+build-essential \
+cmake \
+git \
+libass-dev \
+libfreetype6-dev \
+libgnutls28-dev \
+libmp3lame-dev \
+libsdl2-dev \
+libtool \
+libva-dev \
+libvdpau-dev \
+libvorbis-dev \
+libxcb1-dev \
+libxcb-shm0-dev \
+libxcb-xfixes0-dev \
+meson \
+ninja-build \
+pkg-config \
+texinfo \
+wget \
+yasm \
+zlib1g-dev	
+
+
+# Crear directorios para el código fuente y los binarios
+mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
+
+# Instalar NASM
+sudo apt-get -y install nasm 
+
+sudo apt -y install libx264-dev
+sudo apt -y install libx265-dev
+
+# Instalar openssl
+sudo apt install openssl libssl-dev
+
+sudo apt install libsvtav1-dev
+
+
+# Compilar e instalar libx264
+echo "instalar libx264"
+
+cd ~/ffmpeg_sources && git -C x264 pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264 && PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --enable-pic && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+
+# Compilar e instalar libx265
+echo "instalar libx265"
+
+cd ~/ffmpeg_sources && git -C x265_git pull 2> /dev/null || git clone https://bitbucket.org/multicoreware/x265_git && cd ~/ffmpeg_sources/x265_git/build/linux && cd ~/ffmpeg_sources/x265_git/build/linux/ && chmod 775 multilib.sh && ./multilib.sh
+
+# Compilar e instalar libvpx
+echo "instalar libvpx"
+
+cd ~/ffmpeg_sources && git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && cd libvpx && PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+# Compilar e instalar libfdk-aac
+echo "libfdk-aac"
+
+cd ~/ffmpeg_sources && git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && cd fdk-aac && autoreconf -fiv && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
+
+# Compilar e instalar libopus
+echo "instalar libopus"
+
+cd ~/ffmpeg_sources && git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git && cd opus && ./autogen.sh && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
+
+# Compilar e instalar libaom
+echo "instalar libaom"
+
+cd ~/ffmpeg_sources && git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && mkdir -p aom_build && cd aom_build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_TESTS=OFF -DENABLE_NASM=on ../aom && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+# Compilar e instalar libsvtav1
+echo "libsvtav1"
+
+cd ~/ffmpeg_sources && git -C SVT-AV1 pull 2> /dev/null || git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git && mkdir -p SVT-AV1/build && cd SVT-AV1/build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+# Compilar e instalar libdav1d
+echo "libdav1d"
+
+cd ~/ffmpeg_sources && git -C dav1d pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/dav1d.git && mkdir -p dav1d/build && cd dav1d/build && meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "$HOME/ffmpeg_build" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
+
+# Compilar e instalar libvmaf
+echo "instalar libvmaf"
+cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz && tar xvf v2.1.1.tar.gz && mkdir -p vmaf-2.1.1/libvmaf/build && cd vmaf-2.1.1/libvmaf/build && meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$HOME/ffmpeg_build" --bindir="$HOME/ffmpeg_build/bin" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
+
+
+
+# ... (continuar con las otras compilaciones e instalaciones)
+
+# Compilar e instalar FFmpeg
+echo "clonamos ffmpeg"
+
+cd ~/ffmpeg_sources
+git clone https://git.ffmpeg.org/ffmpeg.git
+cd ffmpeg
+
+
+# Corregir la versión de FFmpeg
+touch VERSION
+
+echo "6.1.git">RELEASE && cp VERSION VERSION.bak && echo -e "$(cat VERSION.bak) [$(date +%Y-%m-%d)] [$(cat RELEASE)] " > VERSION
+
+echo "pasamos a compilar"
+
+# Compilar e instalar FFmpeg
+PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
+--prefix="$HOME/ffmpeg_build" \
+--pkg-config-flags="--static" \
+--extra-cflags="-I$HOME/ffmpeg_build/include" \
+--extra-ldflags="-L$HOME/ffmpeg_build/lib" \
+--extra-libs="-lpthread -lm" \
+--ld="g++" \
+--bindir="$HOME/bin" \
+--enable-gpl \
+--enable-openssl \
+--enable-libaom \
+--enable-libass \
+--enable-libfdk-aac \
+--enable-libfreetype \
+--enable-libmp3lame \
+--enable-libopus \
+--enable-libsvtav1 \
+--enable-libdav1d \
+--enable-libvorbis \
+--enable-libvpx \
+--enable-libx264 \
+--enable-libx265 \
+--enable-nonfree \
+--enable-libopenjpeg \
+--enable-libpulse \
+--enable-chromaprint \
+--enable-frei0r \
+--enable-libbluray \
+--enable-libbs2b \
+--enable-libcdio \
+--enable-librubberband \
+--enable-libspeex \
+--enable-libtheora \
+--enable-libfontconfig \
+--enable-libfribidi \
+--enable-libxml2 \
+--enable-libxvid \
+--enable-version3 \
+--enable-libvidstab \
+--enable-libcaca \
+--enable-libopenmpt \
+--enable-libgme \
+--enable-opengl \
+--enable-libsnappy \
+--enable-libshine \
+--enable-libtwolame \
+--enable-libvo-amrwbenc \
+--enable-libflite \
+--enable-libsoxr \
+--enable-ladspa \
+&& PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install && hash -r
+
+
+source ~/.profile
+
+
+export PATH="$HOME/bin:$PATH"
+
+
+echo "Instalación completada con éxito."
+
+# final ffmpeg 
+
+# install opencv
+
+# VERSION TO BE INSTALLED
+
+OPENCV_VERSION='4.8.1'
+
+
+# 1. KEEP UBUNTU OR DEBIAN UP TO DATE
+
+sudo apt-get -y update
+# sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
+# sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
+# sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
+
+
+# 2. INSTALL THE DEPENDENCIES
+
+# Build tools:
+sudo apt-get install -y build-essential cmake
+
+# GUI (if you want to use GTK instead of Qt, replace 'qt5-default' with 'libgtkglext1-dev' and remove '-DWITH_QT=ON' option in CMake):
+sudo apt-get install -y qt5-default libvtk6-dev
+
+# Media I/O:
+sudo apt-get install -y zlib1g-dev libjpeg-dev libwebp-dev libpng-dev libtiff5-dev libjasper-dev libopenexr-dev libgdal-dev
+
+# Video I/O:
+sudo apt-get install -y libdc1394-22-dev libavcodec-dev libavformat-dev libswscale-dev libtheora-dev libvorbis-dev libxvidcore-dev libx264-dev yasm libopencore-amrnb-dev libopencore-amrwb-dev libv4l-dev libxine2-dev
+
+# Parallelism and linear algebra libraries:
+sudo apt-get install -y libtbb-dev libeigen3-dev
+
+# Python:
+sudo apt-get install -y python-dev python-tk python-numpy python3-dev python3-tk python3-numpy
+
+# Java:
+sudo apt-get install -y ant default-jdk
+
+# Documentation:
+sudo apt-get install -y doxygen
+
+
+# 3. INSTALL THE LIBRARY
+
+sudo apt-get install -y unzip wget
+wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
+unzip ${OPENCV_VERSION}.zip
+rm ${OPENCV_VERSION}.zip
+mv opencv-${OPENCV_VERSION} OpenCV
+cd OpenCV
+mkdir build
+cd build
+cmake -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DBUILD_EXAMPLES=ON -DENABLE_PRECOMPILED_HEADERS=OFF ..
+make -j4
+sudo make install
+sudo ldconfig
+
+
+# final opencv
+
+# Install tensorflow
+
+#!/bin/sh
+
+# Obtener la arquitectura de la CPU
+ARCH=$(uname -m)
+
+if [ "$ARCH" = "x86_64" ]; then
+  echo "**Instalando TensorFlow para x86_64**"
+
+  # Instalar Python 3 y pip
+  sudo apt update
+  sudo apt install -y python3 python3-pip python3-venv
+
+  # Instalar TensorFlow con soporte para GPU
+  python3 -m pip install tensorflow[and-cuda]
+
+  # Verificar la instalación de TensorFlow
+  python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+  pip install tensorflow --break-system-packages
+  
+
+elif [ "$ARCH" = "aarch64" ]; then
+  echo "**Instalando TensorFlow para aarch64**"
+
+  # Instalar Python 3 y pip
+  sudo apt update
+  sudo apt install -y python3 python3-pip python3-venv
+
+  # Crear un entorno virtual y activarlo
+  python3 -m venv tf_env
+  source tf_env/bin/activate
+
+  # Instalar TensorFlow optimizado para ARM
+  pip install tensorflow-cpu-aws
+
+  # Verificar la instalación de TensorFlow
+  python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('CPU'))"
+
+else
+  echo "**Arquitectura de CPU no compatible: $ARCH**"
+  echo "Este script solo funciona en sistemas x86_64 o aarch64."
+  exit 1
+fi
+
+echo "**TensorFlow instalado correctamente para $ARCH**"
+
+# Salir del entorno virtual (si se creó para aarch64)
+if [ "$ARCH" = "aarch64" ]; then
+  deactivate
+fi
+
+# Finak install tensorflow
+
+
 # Descargar la clave GPG para el repositorio de PHP
 sudo wget -qO /etc/apt/trusted.gpg.d/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
 
@@ -127,8 +426,54 @@ echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sou
 sudo apt update && sudo apt upgrade -y
 
 # Instalar PHP y las extensiones necesarias
-sudo apt install -y php8.3-common php8.3 php8.3-fpm php8.3-mysql php8.3-curl php8.3-gd php8.3-imagick php8.3-intl php8.3-mysql php8.3-mbstring php8.3-xml php8.3-mcrypt php8.3-zip php8.3-ldap libapache2-mod-php8.3 php8.3-sybase php8.3-opcache php8.3-pgsql php8.3-redis php8.3-common php8.3 php8.3-cli php8.3-curl php8.3-bz2 php8.3-xml php8.3-mysql php8.3-gd php8.3-imagick php-bz2 php8.3-mbstring php8.3-intl php8.3-opcache php8.3-curl php-curl php-zip php8.3-zip php-ssh2 php8.3-ssh2 php-xmlrpc php-xml php-curl php-mbstring php8.3-fpm   unixodbc-dev --allow-unauthenticated
-sudo systemctl restart php8.3-fpm && sudo systemctl enable php8.3-fpm
+
+sudo apt install -y php8.3-common 
+sudo apt install -y php8.3 
+sudo apt install -y php8.3-fpm 
+sudo apt install -y php8.3-mysql 
+sudo apt install -y php8.3-curl 
+sudo apt install -y php8.3-gd 
+sudo apt install -y php8.3-imagick 
+sudo apt install -y php8.3-intl 
+sudo apt install -y php8.3-mysql 
+sudo apt install -y php8.3-mbstring 
+sudo apt install -y php8.3-xml 
+sudo apt install -y php8.3-mcrypt 
+sudo apt install -y php-mcrypt
+sudo apt install -y php8.3-zip 
+sudo apt install -y php8.3-ldap 
+sudo apt install -y libapache2-mod-php8.3 
+sudo apt install -y php8.3-sybase 
+sudo apt install -y php8.3-opcache 
+sudo apt install -y php8.3-pgsql 
+sudo apt install -y php8.3-redis 
+sudo apt install -y php8.3-common 
+sudo apt install -y php8.3 
+sudo apt install -y php8.3-cli 
+sudo apt install -y php8.3-curl 
+sudo apt install -y php8.3-bz2 
+sudo apt install -y php8.3-xml 
+sudo apt install -y php8.3-mysql 
+sudo apt install -y php8.3-gd 
+sudo apt install -y php8.3-imagick 
+sudo apt install -y php-bz2 
+sudo apt install -y php8.3-mbstring 
+sudo apt install -y php8.3-intl 
+sudo apt install -y php8.3-opcache 
+sudo apt install -y php8.3-curl 
+sudo apt install -y php-curl 
+sudo apt install -y php-zip 
+sudo apt install -y php8.3-zip 
+sudo apt install -y php-ssh2 
+sudo apt install -y php8.3-ssh2 
+sudo apt install -y php-xmlrpc 
+sudo apt install -y php-xml 
+sudo apt install -y php-curl 
+sudo apt install -y php-mbstring 
+sudo apt install -y php8.3-fpm  
+
+sudo systemctl restart php8.3-fpm 
+sudo systemctl enable php8.3-fpm
 # OR
 # sudo apt install libapache2-mod-php8.3
 # When upgrading from an older PHP version:
@@ -176,7 +521,9 @@ echo "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.3/mods-available/sqlsrv
 echo "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.3/mods-available/pdo_sqlsrv.ini
 sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
 
-sudo apt -y install gcc g++ make
+sudo apt -y install gcc 
+sudo apt install -y g++ 
+sudo apt install -y make
 
 
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&\

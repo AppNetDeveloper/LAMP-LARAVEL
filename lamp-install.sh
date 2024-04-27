@@ -471,6 +471,7 @@ sudo apt install -y php-xml
 sudo apt install -y php-curl 
 sudo apt install -y php-mbstring 
 sudo apt install -y php8.3-fpm  
+sudo apt install -y php8.3-curl
 
 sudo systemctl restart php8.3-fpm 
 sudo systemctl enable php8.3-fpm

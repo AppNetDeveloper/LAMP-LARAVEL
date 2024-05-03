@@ -6,8 +6,10 @@ sudo dpkg --configure -a
 # Apache
 sudo systemctl stop apache2
 sudo systemctl disable apache2
-sudo apt-get -y remove --purge apache2 apache*
-
+sudo systemctl stop apache*
+sudo systemctl disable apache*
+sudo apt-get -y remove --purge apache2
+sudo apt-get -y remove --purge apache*
 # Nginx
 sudo systemctl stop nginx
 sudo systemctl disable nginx
@@ -16,8 +18,10 @@ sudo apt-get -y remove --purge nginx nginx-full nginx-common
 # PHP
 sudo systemctl stop php8.3-fpm
 sudo systemctl stop php8.2-fpm
+sudo systemctl stop php*
 sudo systemctl disable php8.3-fpm
 sudo systemctl disable php8.2-fpm
+sudo systemctl disable php*
 sudo apt-get -y remove --purge php8.2-fpm
 sudo apt-get -y remove --purge php8.3-fpm
 sudo apt-get -y remove --purge php*
@@ -27,35 +31,45 @@ sudo systemctl stop mariadb
 sudo systemctl disable mariadb
 sudo apt remove -y mariadb-server
 sudo apt-get -y remove --purge mariadb-*
-
+s
 # MySQL
 sudo systemctl stop mysql
 sudo systemctl disable mysql
 sudo apt-get -y remove --purge mysql-\*
-sudo apt-get -y remove --purge mysql mysql*
-
+sudo apt-get -y remove --purge mysql 
+sudo apt-get -y remove --purge mysql*
 # Redis
 sudo systemctl stop redis-server
 sudo systemctl disable redis-server
-sudo apt-get -y remove --purge redis-server redis*
+sudo apt-get -y remove --purge redis-server
+sudo apt-get -y remove --purge redis*
 
 # Jenkins
 sudo systemctl stop jenkins
 sudo systemctl disable jenkins
-sudo apt-get -y remove --purge jenkins jekins*
+sudo apt-get -y remove --purge jenkins
+sudo apt-get -y remove --purge jekins*
 
 # Webmin
 sudo systemctl stop webmin
 sudo systemctl disable webmin
-sudo apt-get -y remove --purge webmin webmin*
+sudo apt-get -y remove --purge webmin
+sudo apt-get -y remove --purge webmin*
 
+# ftp
+sudo systemctl stop proftpd
+sudo systemctl disable proftpd
+sudo apt-get -y remove --purge proftpd*
+sudo apt-get -y remove --purge proftpd 
 
 # Eliminar directorios de configuración y datos
 sudo rm -rf /var/lib/mysql # Datos de MariaDB y MySQL
 sudo rm -rf /etc/mysql # Configuración de MariaDB y MySQL
 sudo rm -rf /var/www/phpmyadmin
 sudo rm -rf /etc/mysqlconfd # Configuración de conf.d de MySQL
-sudo rm -f /etc/apparmor.d/usr.sbin.mysqld # Configuración de AppArmor de MySQL
+sudo rm -rf /etc/apparmor.d/usr.sbin.mysqld # Configuración de AppArmor de MySQL
+sudo rm -rf /etc/proftpd
+
 
 # Vacía el archivo de registro de journalctl
 sudo journalctl --vacuum-size=100M
@@ -72,6 +86,7 @@ sudo rm -rf /etc/redis # Configuración de Redis
 sudo rm -rf /var/lib/redis # Datos de Redis
 sudo rm -rf /etc/jenkins # Configuración de Jenkins
 sudo rm -rf /etc/webmin # Configuración de Webmin
+sudo rm -rf /etc/proftpd
 
 # Eliminar grupo de MySQL
 sudo delgroup mysql

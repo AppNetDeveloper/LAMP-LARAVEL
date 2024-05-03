@@ -37,6 +37,7 @@ DB="$2"
 INSTALL="$3"
 VPN="$4"
 MARIADBPASSWORD="$5"
+FTP="$6"
 if [ "$WEB_SERVER" = "apache" ]; then
     echo "Instalando Apache..."
 elif [ "$WEB_SERVER" = "nginx" ]; then
@@ -74,6 +75,29 @@ else
     exit 1
 fi
 
+if [ "$FTP" = "install" ]; then
+    echo "Instalando ftp server..."
+elif [ "$FTP" = "none" ]; then
+    echo "Sin instalar ftp server..."
+else
+    if [ "$FTP" != "" ]; then
+        echo "Usar propio servidor FTP"
+        
+        # Valor Usuario:contraseña
+        # Separar en dos variables
+        FTP_USER=$(echo "$FTP" | cut -d ':' -f 1)
+        FTP_PASSWORD=$(echo "$FTP" | cut -d ':' -f 2)
+        
+        # Mostrar los valores separados
+        echo "Usuario: $FTP_USER"
+        echo "Contraseña: $FTP_PASSWORD"
+    else
+        echo "Por favor especifica 'install' para instalar ftp server en local, 'none' sin instalar, o 'usuario:contraseña' si ya dispones de un ftp server"
+        exit 1
+    fi
+fi
+
+
 sudo mkdir /var/www/
 sudo mkdir /var/www/html
 
@@ -101,6 +125,7 @@ sudo apt -y purge php8.3*
 sudo apt -y purge php8.2*
 sudo apt -y purge php8.1*
 sudo apt -y purge php8.0*
+sudo apt -y purge php*
 
 # Instalar curl y wget
 sudo apt install -y curl wget
@@ -118,35 +143,43 @@ sudo make install && sudo ldconfig
 
 
 # Instalar dependencias
-sudo apt-get -y install autoconf build-essential libass-dev libdav1d-dev libmp3lame-dev yasm libopus-dev openssl libssl-dev
+sudo apt-get install -y autoconf
+sudo apt-get install -y build-essential
+sudo apt-get install -y libass-dev
+sudo apt-get install -y libdav1d-dev
+sudo apt-get install -y libmp3lame-dev
+sudo apt-get install -y yasm
+sudo apt-get install -y libopus-dev
+sudo apt-get install -y openssl
+sudo apt-get install -y libssl-dev
 
 # Obtener otras dependencias
-sudo apt-get -y update -qq
-sudo apt-get -y install \
-autoconf \
-automake \
-build-essential \
-cmake \
-git \
-libass-dev \
-libfreetype6-dev \
-libgnutls28-dev \
-libmp3lame-dev \
-libsdl2-dev \
-libtool \
-libva-dev \
-libvdpau-dev \
-libvorbis-dev \
-libxcb1-dev \
-libxcb-shm0-dev \
-libxcb-xfixes0-dev \
-meson \
-ninja-build \
-pkg-config \
-texinfo \
-wget \
-yasm \
-zlib1g-dev	
+sudo apt-get update -qq
+sudo apt-get install -y autoconf
+sudo apt-get install -y automake
+sudo apt-get install -y build-essential
+sudo apt-get install -y cmake
+sudo apt-get install -y git
+sudo apt-get install -y libass-dev
+sudo apt-get install -y libfreetype6-dev
+sudo apt-get install -y libgnutls28-dev
+sudo apt-get install -y libmp3lame-dev
+sudo apt-get install -y libsdl2-dev
+sudo apt-get install -y libtool
+sudo apt-get install -y libva-dev
+sudo apt-get install -y libvdpau-dev
+sudo apt-get install -y libvorbis-dev
+sudo apt-get install -y libxcb1-dev
+sudo apt-get install -y libxcb-shm0-dev
+sudo apt-get install -y libxcb-xfixes0-dev
+sudo apt-get install -y meson
+sudo apt-get install -y ninja-build
+sudo apt-get install -y pkg-config
+sudo apt-get install -y texinfo
+sudo apt-get install -y wget
+sudo apt-get install -y yasm
+sudo apt-get install -y zlib1g-dev
+	
 
 
 # Crear directorios para el código fuente y los binarios
@@ -310,28 +343,61 @@ sudo apt-get -y update
 # 2. INSTALL THE DEPENDENCIES
 
 # Build tools:
-sudo apt-get install -y build-essential cmake
+sudo apt-get install -y build-essential
+sudo apt-get install -y cmake
 
 # GUI (if you want to use GTK instead of Qt, replace 'qt5-default' with 'libgtkglext1-dev' and remove '-DWITH_QT=ON' option in CMake):
-sudo apt-get install -y qt5-default libvtk6-dev
+sudo apt-get install -y qt5-default
+sudo apt-get install -y libvtk6-dev
 
 # Media I/O:
-sudo apt-get install -y zlib1g-dev libjpeg-dev libwebp-dev libpng-dev libtiff5-dev libjasper-dev libopenexr-dev libgdal-dev
+sudo apt-get install -y zlib1g-dev
+sudo apt-get install -y libjpeg-dev
+sudo apt-get install -y libwebp-dev
+sudo apt-get install -y libpng-dev
+sudo apt-get install -y libtiff5-dev
+sudo apt-get install -y libjasper-dev
+sudo apt-get install -y libopenexr-dev
+sudo apt-get install -y libgdal-dev
+
 
 # Video I/O:
-sudo apt-get install -y libdc1394-22-dev libavcodec-dev libavformat-dev libswscale-dev libtheora-dev libvorbis-dev libxvidcore-dev libx264-dev yasm libopencore-amrnb-dev libopencore-amrwb-dev libv4l-dev libxine2-dev
+sudo apt-get install -y libdc1394-22-dev
+sudo apt-get install -y libavcodec-dev
+sudo apt-get install -y libavformat-dev
+sudo apt-get install -y libswscale-dev
+sudo apt-get install -y libtheora-dev
+sudo apt-get install -y libvorbis-dev
+sudo apt-get install -y libxvidcore-dev
+sudo apt-get install -y libx264-dev
+sudo apt-get install -y yasm
+sudo apt-get install -y libopencore-amrnb-dev
+sudo apt-get install -y libopencore-amrwb-dev
+sudo apt-get install -y libv4l-dev
+sudo apt-get install -y libxine2-dev
+
 
 # Parallelism and linear algebra libraries:
-sudo apt-get install -y libtbb-dev libeigen3-dev
+sudo apt-get install -y libtbb-dev
+sudo apt-get install -y libeigen3-dev
 
 # Python:
-sudo apt-get install -y python-dev python-tk python-numpy python3-dev python3-tk python3-numpy
+sudo apt-get install -y python-dev
+sudo apt-get install -y python-tk
+sudo apt-get install -y python-numpy
+sudo apt-get install -y python3-dev
+sudo apt-get install -y python3-tk
+sudo apt-get install -y python3-numpy
 
 # Java:
 sudo apt-get install -y ant default-jdk
 
 # Documentation:
 sudo apt-get install -y doxygen
+
+#WHOIS
+sudo apt -y install whois
+
 
 
 # 3. INSTALL THE LIBRARY
@@ -1201,6 +1267,52 @@ sudo systemctl start jenkins
 # anadir poder root al usuario jenkins
 echo "jenkins ALL=(ALL:ALL) ALL" | sudo tee -a /etc/sudoers
 
+#Installar servidor ftp
+if [ "$FTP" = "install" ]; then
+	    # Función para generar una contraseña segura
+	generate_FTP_PASSWORD() {
+	  openssl rand -base64 32 | tr -dc 'a-zA-Z0-9-_!@#$%^&*()+=\[\]{};:'"<>,./?\\|\~" | head -c 16
+	}
+	
+	# Generar nombre de usuario y contraseña aleatorios
+	FTP_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
+	FTP_PASSWORD=$(generate_FTP_PASSWORD)
+	FTP_DIR=/var/www/ftp
+	
+	# Actualizar e instalar paquetes necesarios
+	sudo apt install -y proftpd
+	
+	# Configurar ProFTPD
+	sudo tee "/etc/proftpd/proftpd.conf" > /dev/null <<EOF
+	DefaultRoot ~
+	RequireValidShell off
+	PassivePorts 50000 50010
+	EOF
+	
+	
+	    # Verificar si el directorio existe
+	if [ ! -d "$FTP_DIR" ]; then
+	    # Crear el directorio FTP si no existe
+	    sudo mkdir -p "$FTP_DIR"
+	    echo "Directorio $FTP_DIR creado."
+	fi
+	    # Crear el usuario sin crear el directorio de inicio si ya existe
+	    sudo useradd -M -d $FTP_DIR -s /bin/bash $FTP_USER
+	    # Establecer la contraseña del usuario utilizando chpasswd
+	    echo "$FTP_USER:$FTP_PASSWORD" | sudo chpasswd
+	    # Agregar al usuario al grupo propietario del directorio
+	    sudo usermod -aG $(stat -c '%G' $FTP_DIR) $FTP_USER
+	    # Otorgar permisos de lectura, escritura y ejecución al directorio y a todos los archivos dentro de él
+	    sudo chmod -R 777 $FTP_DIR
+	
+	# Reiniciar ProFTPD
+	sudo systemctl restart proftpd
+fi
+
+
+
+
+
 
 # descargar de git
 
@@ -1336,6 +1448,9 @@ echo 'Contraseña de Jenkins:'
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 echo 'jenkins interface : ip:8080'
 echo 'servidor web es ip con la ruta de los archivos /www/var/html'
+# Mostrar credenciales de usuario FTP
+echo "Usuario FTP : $FTP_USER"
+echo "Contraseña FTP : $FTP_PASSWORD"
 
 
 

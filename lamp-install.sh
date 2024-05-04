@@ -1343,6 +1343,32 @@ elif [ "$INSTALL" != "" ]; then
 	sed -i "s/^\(DB_DATABASE=\).*/\1${DB}/" "$ENV_FILE"
 	sed -i "s/^\(DB_USERNAME=\).*/\1${NEW_USERNAME}/" "$ENV_FILE"
 	sed -i "s/^\(DB_PASSWORD=\).*/\1${NEW_PASSWORD}/" "$ENV_FILE"
+ 
+	 if [ "$FTP" = "install" ]; then
+	    	sed -i "s/^\(FTP_HOST=\).*/\1localhost/" "$ENV_FILE"
+		sed -i "s/^\(FTP_PORT=\).*/\121" "$ENV_FILE"
+		sed -i "s/^\(FTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
+  		sed -i "s/^\(FTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
+		sed -i "s/^\(FTP_ROOT=\).*/\1//" "$ENV_FILE"
+		sed -i "s/^\(FTP_PASSIVE=\).*/\1false/" "$ENV_FILE"
+	fi
+ 	
+	# Verificar si el valor de FTP no está vacío y no es "none"
+	if [ "$FTP" != "" ] && [ "$FTP" != "none" ]; then
+	    # Dividir el valor de FTP en partes
+	    IFS=':@/' read -r FTP_USER FTP_PASSWORD FTP_HOST FTP_PORT FTP_PATH <<< "$FTP"
+	
+	    # Actualizar las variables en el archivo de entorno
+	    sed -i "s/^\(FTP_HOST=\).*/\1$FTP_HOST/" "$ENV_FILE"
+	    sed -i "s/^\(FTP_PORT=\).*/\1$FTP_PORT/" "$ENV_FILE"
+	    sed -i "s/^\(FTP_USERNAME=\).*/\1$FTP_USER/" "$ENV_FILE"
+	    sed -i "s/^\(FTP_PASSWORD=\).*/\1$FTP_PASSWORD/" "$ENV_FILE"
+	    sed -i "s/^\(FTP_ROOT=\).*/\1$FTP_PATH/" "$ENV_FILE"
+	    sed -i "s/^\(FTP_PASSIVE=\).*/\1false/" "$ENV_FILE"
+	fi
+ 
+
+ 	
 	export COMPOSER_ALLOW_SUPERUSER=1
 	/usr/local/bin/composer update
 	echo 'generar con artisan todo lo de la base mysql necesario'

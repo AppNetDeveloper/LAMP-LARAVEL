@@ -97,7 +97,7 @@ else
     fi
 fi
 
-
+sudo rm -rf /var/www/html/
 sudo mkdir /var/www/
 sudo mkdir /var/www/html
 
@@ -120,12 +120,9 @@ EOF
 
 sudo apt -y update
 ## Remove old packages
-sudo apt -y purge php8.3*
-
-sudo apt -y purge php8.2*
-sudo apt -y purge php8.1*
-sudo apt -y purge php8.0*
+sudo apt -y remove --purge php*
 sudo apt -y purge php*
+sudo apt -y autoremove --purge
 
 # Instalar curl y wget
 sudo apt install -y curl wget
@@ -649,16 +646,12 @@ nvm alias default 22
 if [ "$WEB_SERVER" = "apache" ]; then
     echo "Instalando Apache..."
     # Aquí va el código para instalar Apache.
-	sudo apt -y remove nginx
 	sudo systemctl stop nginx
+    sudo apt -y remove nginx
 	sudo apt install -y apache2
 	sudo a2enmod proxy_fcgi setenvif
-	sudo a2enconf php8.2-fpm
-	sudo a2disconf php8.1-fpm
-	sudo a2disconf php8-fpm
-	sudo a2dismod php8.1
-	sudo a2dismod php8.2
-	sudo a2dismod php8.3
+	sudo a2disconf php*
+	sudo a2dismod php*
 	sudo a2enconf php8.3-fpm
 	sudo systemctl enable php8.3-fpm
 	sudo systemctl reload apache2
@@ -689,20 +682,15 @@ echo "<VirtualHost *:80>
 sudo service apache2 restart
 
 sudo chmod -R 777 /var/www/html
-echo 'anadir apache web control'
-sudo wget https://excellmedia.dl.sourceforge.net/project/apachegui/1.12-Linux-Solaris-Mac/ApacheGUI-1.12.0.tar.gz
-sudo tar -xzvf ApacheGUI-1.12.0.tar.gz -C /usr/local/
-cd /usr/local/ApacheGUI/bin || exit
-sudo ./run.sh
+
 	
 elif [ "$WEB_SERVER" = "nginx" ]; then
     echo "Instalando Nginx..."
     # Aquí va el código para instalar Nginx.
 	sudo a2enmod proxy_fcgi setenvif
-	sudo a2enconf php8.3-fpm
-	sudo a2disconf php8.1-fpm
-	sudo a2dismod php8.1
-	sudo a2dismod php8.2
+	sudo a2disconf php*
+	sudo a2dismod php*
+    sudo a2enconf php8.3-fpm
 	sudo systemctl enable php8.3-fpm
 	sudo systemctl stop apache2
 	sudo service apache2 stop
@@ -716,8 +704,9 @@ elif [ "$WEB_SERVER" = "nginx" ]; then
 	sudo apt -y install nginx
 	sudo -y apt-get install nginx-extras
 	sudo apt -y install nginx-*
-	sudo rm -rf /var/www/html/
-	sudo mkdir -p /var/www/html
+    sudo apt -y install nginx-module-*
+
+	
 	
 	sudo chmod 755 -R /var/www/html/
 	sudo chown www-data:www-data -R /var/www/html/
@@ -1040,13 +1029,7 @@ systemctl start php8.3-fpm
 systemctl enable php8.3-fpm
 
 # Reiniciar Nginx
-systemctl restart nginx 
-
-	
-	# Nginx webGui, el panel de control para nginx sin tocar el root del servidor. Ademas se pueden crear varios vhost o proxys ilimitados
-	curl -L -s https://raw.githubusercontent.com/0xJacky/nginx-ui/master/install.sh -o installgui.sh
-	chmod +x installgui.sh
-	./installgui.sh install
+systemctl restart nginx && systemctl enable nginx
 
 else
     echo "Por favor especifica 'apache' o 'nginx' como argumento al ejecutar este script. Ejemplo: sh install.sh apache o sh install.sh nginx"
@@ -1256,54 +1239,9 @@ else
 fi
 
 
-# Agrega el repositorio de Webmin
-echo 'install webmin'
-cd /tmp || exit
-
-echo "deb http://download.webmin.com/download/repository sarge contrib" | sudo tee /etc/apt/sources.list.d/webmin.list
-
-# Agrega la llave del repositorio
-wget -q http://www.webmin.com/jcameron-key.asc -O- | sudo apt-key add -
-
-# Actualiza los paquetes del sistema
-sudo apt update
-
-# Instala Webmin
-sudo apt install -y webmin
-
-# Asegúrate de que Webmin se inicie al arrancar el sistema
-sudo systemctl enable webmin
-
-sudo systemctl start webmin
-
 #redis
 sudo apt -y install redis-server
 sudo systemctl enable --now redis-server.service
-
-
-# Install Jenkins
-echo 'install Jenkins'
-sudo apt update 
-sudo apt -y install default-jre 
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
-  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
-sudo apt-get update
-sudo apt-get -y install jenkins
-
-sudo chown -R jenkins:jenkins /var/www/html
-sudo chmod -R 755 /var/www/html
-sudo usermod -a -G www-data jenkins
-grep 'www-data' /etc/group
-groups jenkins
-
-# Iniciar Jenkins
-sudo systemctl start jenkins
-
-# anadir poder root al usuario jenkins
-echo "jenkins ALL=(ALL:ALL) ALL" | sudo tee -a /etc/sudoers
 
 #Installar servidor ftp
 if [ "$FTP" = "install" ]; then
@@ -1445,14 +1383,6 @@ else
     exit 1
 fi
 
-echo 'add user permisions'
-groups jenkins
-sudo usermod -a -G apache jenkins
-sudo usermod -a -G nginx jenkins
-sudo usermod -a -G www-data jenkins
-sudo usermod -aG apache jenkins
-sudo usermod -aG nginx jenkins
-sudo usermod -aG www-data jenkins
 sudo chown -R :apache /var/www/html
 sudo chown -R :nginx /var/www/html
 sudo chown -R :www-data /var/www/html
@@ -1460,18 +1390,7 @@ sudo chmod -R g+rwx /var/www/html
 sudo chown -R :apache /var/www/html
 sudo chown -R :nginx /var/www/html
 sudo chmod -R g+rwx /var/www/html
-echo ""  # Imprime una línea en blanco
-echo ''
-echo ''
-echo ''
-echo ''
-echo ''
-echo ''
-echo ''
-echo ''
-echo ''
-echo ''
-echo ''
+
 if [ "$VPN" = "none" ]; then
     echo 'Sin VPN P2P Zerotier, Sin abrir Puertos '
 elif [ "$VPN" != "" ]; then
@@ -1484,15 +1403,7 @@ else
     exit 1
 fi
 
-echo 'Ip:10000 es la interface de WebMin'
-if [ "$WEB_SERVER" = "apache" ]; then
-    echo 'ip:9999/ApacheGUI/  es el panel de apache. '
-elif [ "$WEB_SERVER" = "nginx" ]; then
-    echo 'Ip:9000 es la interface de nginx WebGui'
-else
-    echo "Por favor especifica 'apache' o 'nginx' como argumento al ejecutar este script. Ejemplo: sh install.sh apache o sh install.sh nginx"
-    exit 1
-fi
+
 
 if [ "$DB" = "none" ]; then
     echo 'Sin anadir MariaDb '

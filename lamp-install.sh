@@ -298,6 +298,7 @@ sudo apt -y install libxine2-dev
 echo "clonamos ffmpeg"
 cd ~/ffmpeg_sources
 git clone https://github.com/FFmpeg/FFmpeg.git
+mv FFmpeg ffmpeg
 cd ffmpeg
 
 

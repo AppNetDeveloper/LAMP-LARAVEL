@@ -138,7 +138,7 @@ git clone https://github.com/mstorsjo/fdk-aac && \
 cd fdk-aac && \
 autoreconf -fiv && \
 ./configure --enable-shared && \
-make -j4 && \
+make -j$(nproc) && \
 sudo make install && sudo ldconfig
 
 
@@ -180,7 +180,7 @@ sudo apt-get install -y wget
 sudo apt-get install -y yasm
 sudo apt-get install -y zlib1g-dev
 	
-
+rm -rf ~/ffmpeg_sources
 
 # Crear directorios para el código fuente y los binarios
 mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
@@ -247,8 +247,25 @@ cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.g
 # ... (continuar con las otras compilaciones e instalaciones)
 
 # Compilar e instalar FFmpeg
-echo "clonamos ffmpeg"
+sudo apt -y install libchromaprint-tools
+sudo apt -y install frei0r-plugins-dev
+sudo apt -y install qttools5-dev 
+sudo apt -y install qttools5-dev-tools 
+sudo apt -y install libqt5svg5-dev 
+sudo apt -y install ladspa-sdk 
+sudo apt -y install git 
+sudo apt -y install cmake 
+sudo apt -y install libsndfile1-dev 
+sudo apt -y install libsamplerate-ocaml-dev 
+sudo apt -y install libjack-jackd2-dev
+sudo apt -y install libxml*
+sudo apt -y install freetype*
+sudo apt -y install fontconfig*
+sudo apt-get -y install libbluray-bdj
+sudo apt-get -y install libbluray-*
+sudo apt-get -y install libbluray-dev
 
+echo "clonamos ffmpeg"
 cd ~/ffmpeg_sources
 git clone https://git.ffmpeg.org/ffmpeg.git
 cd ffmpeg
@@ -257,7 +274,7 @@ cd ffmpeg
 # Corregir la versión de FFmpeg
 touch VERSION
 
-echo "6.1.git">RELEASE && cp VERSION VERSION.bak && echo -e "$(cat VERSION.bak) [$(date +%Y-%m-%d)] [$(cat RELEASE)] " > VERSION
+echo "7.0.git">RELEASE && cp VERSION VERSION.bak && echo -e "$(cat VERSION.bak) [$(date +%Y-%m-%d)] [$(cat RELEASE)] " > VERSION
 
 echo "pasamos a compilar"
 
@@ -329,7 +346,7 @@ echo "Instalación completada con éxito."
 
 # VERSION TO BE INSTALLED
 
-OPENCV_VERSION='4.8.1'
+OPENCV_VERSION='4.9.0'
 
 
 # 1. KEEP UBUNTU OR DEBIAN UP TO DATE
@@ -398,6 +415,27 @@ sudo apt-get install -y doxygen
 #WHOIS
 sudo apt -y install whois
 
+#Necesarios OpenCV
+sudo apt -y  install build-essential 
+sudo apt -y  cmake pkg-config 
+sudo apt -y  libjpeg-dev 
+sudo apt -y  libpng-dev 
+sudo apt -y  libtiff-dev 
+sudo apt -y  libjasper-dev 
+sudo apt -y  libavcodec-dev 
+sudo apt -y  libavformat-dev 
+sudo apt -y  libswscale-dev 
+sudo apt -y  libgstreamer1.0-dev 
+sudo apt -y  libgstreamer-plugins-base1.0-dev 
+sudo apt -y  libv4l2-dev 
+sudo apt -y  python3-dev 
+sudo apt -y  python3-numpy
+
+sudo apt install libopencv-dev python3-opencv
+python3 -c "import cv2; print(cv2.__version__)"
+
+apt -y install graphicsmagick-imagemagick-compat
+apt -y install imagemagick
 
 
 # 3. INSTALL THE LIBRARY
@@ -411,7 +449,7 @@ cd OpenCV
 mkdir build
 cd build
 cmake -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DBUILD_EXAMPLES=ON -DENABLE_PRECOMPILED_HEADERS=OFF ..
-make -j4
+make -j$(nproc)
 sudo make install
 sudo ldconfig
 
@@ -470,7 +508,7 @@ if [ "$ARCH" = "aarch64" ]; then
   deactivate
 fi
 
-# Finak install tensorflow
+# Final install tensorflow
 
 
 # Descargar la clave GPG para el repositorio de PHP

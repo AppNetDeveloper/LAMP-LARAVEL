@@ -109,7 +109,7 @@ sudo dpkg -l | grep php | tee packages.txt
 
 # Add Ondrej's repo source and signing key along with dependencies
 sudo apt -y update && sudo apt upgrade -y
-sudo apt install -y apt-transport-https ca-certificates gnupg2 software-properties-common lsb-release
+sudo apt -y install -y apt-transport-https ca-certificates gnupg2 software-properties-common lsb-release
 
 sudo curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
 sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
@@ -125,7 +125,7 @@ sudo apt -y purge php*
 sudo apt -y autoremove --purge
 
 # Instalar curl y wget
-sudo apt install -y curl wget
+sudo apt -y install -y curl wget
 
 # Install ffmpeg
 
@@ -189,9 +189,9 @@ sudo apt -y install libx264-dev
 sudo apt -y install libx265-dev
 
 # Instalar openssl
-sudo apt install openssl libssl-dev
+sudo apt -y install openssl libssl-dev
 
-sudo apt install libsvtav1-dev
+sudo apt -y install libsvtav1-dev
 
 
 # Compilar e instalar libx264
@@ -261,10 +261,43 @@ sudo apt -y install fontconfig*
 sudo apt-get -y install libbluray-bdj
 sudo apt-get -y install libbluray-*
 sudo apt-get -y install libbluray-dev
+sudo apt -y install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev
+sudo apt -y install liblilv-0-0 liblilv-dev lilv-utils 
+sudo apt -y install libiec61883-dev libraw1394-tools libraw1394-doc libraw1394-dev libraw1394-doc libraw1394-tools
+sudo apt -y install libavc1394-0 libavc1394-dev libavc1394-tools
+sudo apt -y install libbluray-dev libbluray-doc libbluray-bin
+sudo apt -y install libbs2b-dev libbs2b0
+sudo apt -y install libcaca-dev
+sudo apt -y install libdc1394-22-dev
+sudo apt -y install libgme-dev
+sudo apt -y install libgsm1-dev
+sudo apt -y install libmodplug-dev
+sudo apt -y install libmp3lame-dev
+sudo apt -y install libopencore-amrnb-dev
+sudo apt -y install libopencore-amrwb-dev
+sudo apt -y install libopenexr-dev
+sudo apt -y install libopenjp2-7-dev
+sudo apt -y install libopus-dev
+sudo apt -y install librtmp-dev
+sudo apt -y install librubberband-dev
+sudo apt -y install libsoxr-dev
+sudo apt -y install libspeex-dev
+sudo apt -y install libtheora-dev
+sudo apt -y install libtwolame-dev
+sudo apt -y install libvorbis-dev
+sudo apt -y install libvpx-dev
+sudo apt -y install libx264-dev
+sudo apt -y install libx265-dev
+sudo apt -y install libxvidcore-dev
+sudo apt -y install libzmq3-dev
+sudo apt -y install libzvbi-dev
+sudo apt -y install libzvbi0
+sudo apt -y install libxine2-dev
+
 
 echo "clonamos ffmpeg"
 cd ~/ffmpeg_sources
-git clone https://git.ffmpeg.org/ffmpeg.git
+git clone https://github.com/FFmpeg/FFmpeg.git
 cd ffmpeg
 
 
@@ -428,7 +461,7 @@ sudo apt -y  libv4l2-dev
 sudo apt -y  python3-dev 
 sudo apt -y  python3-numpy
 
-sudo apt install libopencv-dev python3-opencv
+sudo apt -y install libopencv-dev python3-opencv
 python3 -c "import cv2; print(cv2.__version__)"
 
 apt -y install graphicsmagick-imagemagick-compat
@@ -465,7 +498,7 @@ if [ "$ARCH" = "x86_64" ]; then
 
   # Instalar Python 3 y pip
   sudo apt update
-  sudo apt install -y python3 python3-pip python3-venv
+  sudo apt -y install -y python3 python3-pip python3-venv
 
   # Instalar TensorFlow con soporte para GPU
   python3 -m pip install tensorflow[and-cuda]
@@ -480,7 +513,7 @@ elif [ "$ARCH" = "aarch64" ]; then
 
   # Instalar Python 3 y pip
   sudo apt update
-  sudo apt install -y python3 python3-pip python3-venv
+  sudo apt -y install -y python3 python3-pip python3-venv
 
   # Crear un entorno virtual y activarlo
   python3 -m venv tf_env
@@ -528,56 +561,56 @@ sudo apt update && sudo apt upgrade -y
 
 # Instalar PHP y las extensiones necesarias
 
-sudo apt install -y php8.3-common 
-sudo apt install -y php8.3 
-sudo apt install -y php8.3-fpm 
-sudo apt install -y php8.3-mysql 
-sudo apt install -y php8.3-curl 
-sudo apt install -y php8.3-gd 
-sudo apt install -y php8.3-imagick 
-sudo apt install -y php8.3-intl 
-sudo apt install -y php8.3-mysql 
-sudo apt install -y php8.3-mbstring 
-sudo apt install -y php8.3-xml 
-sudo apt install -y php8.3-mcrypt 
-sudo apt install -y php-mcrypt
-sudo apt install -y php8.3-zip 
-sudo apt install -y php8.3-ldap 
-sudo apt install -y libapache2-mod-php8.3 
-sudo apt install -y php8.3-sybase 
-sudo apt install -y php8.3-opcache 
-sudo apt install -y php8.3-pgsql 
-sudo apt install -y php8.3-redis 
-sudo apt install -y php8.3-common 
-sudo apt install -y php8.3 
-sudo apt install -y php8.3-cli 
-sudo apt install -y php8.3-curl 
-sudo apt install -y php8.3-bz2 
-sudo apt install -y php8.3-xml 
-sudo apt install -y php8.3-mysql 
-sudo apt install -y php8.3-gd 
-sudo apt install -y php8.3-imagick 
-sudo apt install -y php-bz2 
-sudo apt install -y php8.3-mbstring 
-sudo apt install -y php8.3-intl 
-sudo apt install -y php8.3-opcache 
-sudo apt install -y php8.3-curl 
-sudo apt install -y php-curl 
-sudo apt install -y php-zip 
-sudo apt install -y php8.3-zip 
-sudo apt install -y php-ssh2 
-sudo apt install -y php8.3-ssh2 
-sudo apt install -y php-xmlrpc 
-sudo apt install -y php-xml 
-sudo apt install -y php-curl 
-sudo apt install -y php-mbstring 
-sudo apt install -y php8.3-fpm  
-sudo apt install -y php8.3-curl
+sudo apt -y install -y php8.3-common 
+sudo apt -y install -y php8.3 
+sudo apt -y install -y php8.3-fpm 
+sudo apt -y install -y php8.3-mysql 
+sudo apt -y install -y php8.3-curl 
+sudo apt -y install -y php8.3-gd 
+sudo apt -y install -y php8.3-imagick 
+sudo apt -y install -y php8.3-intl 
+sudo apt -y install -y php8.3-mysql 
+sudo apt -y install -y php8.3-mbstring 
+sudo apt -y install -y php8.3-xml 
+sudo apt -y install -y php8.3-mcrypt 
+sudo apt -y install -y php-mcrypt
+sudo apt -y install -y php8.3-zip 
+sudo apt -y install -y php8.3-ldap 
+sudo apt -y install -y libapache2-mod-php8.3 
+sudo apt -y install -y php8.3-sybase 
+sudo apt -y install -y php8.3-opcache 
+sudo apt -y install -y php8.3-pgsql 
+sudo apt -y install -y php8.3-redis 
+sudo apt -y install -y php8.3-common 
+sudo apt -y install -y php8.3 
+sudo apt -y install -y php8.3-cli 
+sudo apt -y install -y php8.3-curl 
+sudo apt -y install -y php8.3-bz2 
+sudo apt -y install -y php8.3-xml 
+sudo apt -y install -y php8.3-mysql 
+sudo apt -y install -y php8.3-gd 
+sudo apt -y install -y php8.3-imagick 
+sudo apt -y install -y php-bz2 
+sudo apt -y install -y php8.3-mbstring 
+sudo apt -y install -y php8.3-intl 
+sudo apt -y install -y php8.3-opcache 
+sudo apt -y install -y php8.3-curl 
+sudo apt -y install -y php-curl 
+sudo apt -y install -y php-zip 
+sudo apt -y install -y php8.3-zip 
+sudo apt -y install -y php-ssh2 
+sudo apt -y install -y php8.3-ssh2 
+sudo apt -y install -y php-xmlrpc 
+sudo apt -y install -y php-xml 
+sudo apt -y install -y php-curl 
+sudo apt -y install -y php-mbstring 
+sudo apt -y install -y php8.3-fpm  
+sudo apt -y install -y php8.3-curl
 
 sudo systemctl restart php8.3-fpm 
 sudo systemctl enable php8.3-fpm
 # OR
-# sudo apt install libapache2-mod-php8.3
+# sudo apt -y install libapache2-mod-php8.3
 # When upgrading from an older PHP version:
 
 sudo a2disconf php8.2-fpm
@@ -624,8 +657,8 @@ echo "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.3/mods-available/pd
 sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
 
 sudo apt -y install gcc 
-sudo apt install -y g++ 
-sudo apt install -y make
+sudo apt -y install -y g++ 
+sudo apt -y install -y make
 
 
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&\
@@ -648,7 +681,7 @@ if [ "$WEB_SERVER" = "apache" ]; then
     # Aquí va el código para instalar Apache.
 	sudo systemctl stop nginx
     sudo apt -y remove nginx
-	sudo apt install -y apache2
+	sudo apt -y install -y apache2
 	sudo a2enmod proxy_fcgi setenvif
 	sudo a2disconf php*
 	sudo a2dismod php*
@@ -1037,7 +1070,7 @@ else
 fi
 
 #Composer Install
-sudo apt install -y curl php-cli php-mbstring git unzip
+sudo apt -y install -y curl php-cli php-mbstring git unzip
 cd ~ || exit
 curl -sS https://getcomposer.org/installer -o composer-setup.php
 HASH=`curl -sS https://composer.github.io/installer.sig`
@@ -1045,7 +1078,7 @@ php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Insta
 sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 #NPM install
-sudo apt install -y nodejs npm
+sudo apt -y install -y nodejs npm
 
 
 
@@ -1256,7 +1289,7 @@ if [ "$FTP" = "install" ]; then
 	FTP_DIR=/var/www/ftp
 	
 	# Actualizar e instalar paquetes necesarios
-	sudo apt install -y proftpd
+	sudo apt -y install -y proftpd
 	
 	# Configurar ProFTPD
 	sudo tee "/etc/proftpd/proftpd.conf" > /dev/null <<EOF
@@ -1301,7 +1334,7 @@ elif [ "$INSTALL" != "" ]; then
 	cd /var/www/ || exit
 	rm -rf *
 	rm -rf .*
-	sudo apt install -y wget zip
+	sudo apt -y install -y wget zip
 	wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
 	sudo unzip phpMyAdmin-5.2.1-all-languages.zip
 	mv phpMyAdmin-5.2.1-all-languages phpmyadmin

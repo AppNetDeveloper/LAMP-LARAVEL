@@ -31,6 +31,11 @@ fi
 
 echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
 
+sudo apt-get -y update
+sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
+# sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
+sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
+
 
 WEB_SERVER="$1"
 DB="$2"
@@ -108,7 +113,6 @@ apt -y install sudo
 sudo dpkg -l | grep php | tee packages.txt
 
 # Add Ondrej's repo source and signing key along with dependencies
-sudo apt -y update && sudo apt upgrade -y
 sudo apt -y install -y apt-transport-https ca-certificates gnupg2 software-properties-common lsb-release
 
 sudo curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
@@ -292,7 +296,7 @@ cd ~/ffmpeg_sources && git -C dav1d pull 2> /dev/null || git clone --depth 1 htt
 echo "instalar libvmaf"
 cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz && tar xvf v2.1.1.tar.gz && mkdir -p vmaf-2.1.1/libvmaf/build && cd vmaf-2.1.1/libvmaf/build && meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$HOME/ffmpeg_build" --bindir="$HOME/ffmpeg_build/bin" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
 
-# Compilar e instalar libx264
+
 git clone --depth=1 https://gitlab.com/AOMediaCodec/SVT-AV1.git
 cd SVT-AV1
 cd Build
@@ -395,15 +399,6 @@ echo "Instalación completada con éxito."
 
 OPENCV_VERSION='4.9.0'
 
-
-# 1. KEEP UBUNTU OR DEBIAN UP TO DATE
-
-sudo apt-get -y update
-# sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
-# sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
-# sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
-
-
 # 2. INSTALL THE DEPENDENCIES
 
 # Build tools:
@@ -487,7 +482,7 @@ apt -y install imagemagick
 
 # 3. INSTALL THE LIBRARY
 
-sudo apt-get install -y unzip wget
+sudo apt-get install -y unzip wget zip
 wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
 unzip ${OPENCV_VERSION}.zip
 rm ${OPENCV_VERSION}.zip

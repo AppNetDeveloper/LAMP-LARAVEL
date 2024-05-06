@@ -246,24 +246,16 @@ cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.g
 # Compilar e instalar FFmpeg
 sudo apt -y install libchromaprint-tools
 sudo apt -y install frei0r-plugins-dev
-sudo apt -y install qttools5-dev 
-sudo apt -y install qttools5-dev-tools 
-sudo apt -y install libqt5svg5-dev 
-sudo apt -y install ladspa-sdk 
-sudo apt -y install git 
-sudo apt -y install cmake 
-sudo apt -y install libsndfile1-dev 
-sudo apt -y install libsamplerate-ocaml-dev 
+sudo apt -y install qttools5-dev qttools5-dev-tools
+sudo apt -y install libqt5svg5-dev
+sudo apt -y install ladspa-sdk git cmake
+sudo apt -y install libsndfile1-dev libsamplerate-ocaml-dev
 sudo apt -y install libjack-jackd2-dev
-sudo apt -y install libxml*
-sudo apt -y install freetype*
-sudo apt -y install fontconfig*
-sudo apt-get -y install libbluray-bdj
-sudo apt-get -y install libbluray-*
-sudo apt-get -y install libbluray-dev
+sudo apt -y install libxml* freetype* fontconfig*
+sudo apt-get -y install libbluray-bdj libbluray-* libbluray-dev
 sudo apt -y install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev
-sudo apt -y install liblilv-0-0 liblilv-dev lilv-utils 
-sudo apt -y install libiec61883-dev libraw1394-tools libraw1394-doc libraw1394-dev libraw1394-doc libraw1394-tools
+sudo apt -y install liblilv-0-0 liblilv-dev lilv-utils
+sudo apt -y install libiec61883-dev libraw1394-tools libraw1394-doc libraw1394-dev libraw1394-tools
 sudo apt -y install libavc1394-0 libavc1394-dev libavc1394-tools
 sudo apt -y install libbluray-dev libbluray-doc libbluray-bin
 sudo apt -y install libbs2b-dev libbs2b0
@@ -293,6 +285,18 @@ sudo apt -y install libzmq3-dev
 sudo apt -y install libzvbi-dev
 sudo apt -y install libzvbi0
 sudo apt -y install libxine2-dev
+sudo apt -y install flite1-dev libflite-dev
+sudo apt -y install libopenal-dev libopenal0
+sudo apt -y install libopenmpt-dev libopenmpt0
+sudo apt -y install libshine-dev libshine1
+sudo apt -y install libvidstab-dev
+sudo apt -y install libva-dev
+sudo apt -y install libva-drm-dev
+sudo apt -y install libva-x11-dev
+sudo apt -y install libvdpau-dev
+sudo apt -y install libvdpau-va-gl1
+sudo apt -y install libvmaf-dev
+sudo apt -y install libwebp-dev
 
 
 echo "clonamos ffmpeg"

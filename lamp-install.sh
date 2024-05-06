@@ -151,7 +151,6 @@ sudo apt-get install -y openssl
 sudo apt-get install -y libssl-dev
 
 # Obtener otras dependencias
-sudo apt-get update -qq
 sudo apt-get install -y autoconf
 sudo apt-get install -y automake
 sudo apt-get install -y build-essential
@@ -176,6 +175,60 @@ sudo apt-get install -y texinfo
 sudo apt-get install -y wget
 sudo apt-get install -y yasm
 sudo apt-get install -y zlib1g-dev
+sudo apt -y install libchromaprint-tools
+sudo apt -y install frei0r-plugins-dev
+sudo apt -y install qttools5-dev qttools5-dev-tools
+sudo apt -y install libqt5svg5-dev
+sudo apt -y install ladspa-sdk git cmake
+sudo apt -y install libsndfile1-dev libsamplerate-ocaml-dev
+sudo apt -y install libjack-jackd2-dev
+sudo apt -y install libxml* freetype* fontconfig*
+sudo apt-get -y install libbluray-bdj libbluray-* libbluray-dev
+sudo apt -y install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev
+sudo apt -y install liblilv-0-0 liblilv-dev lilv-utils
+sudo apt -y install libiec61883-dev libraw1394-tools libraw1394-doc libraw1394-dev libraw1394-tools
+sudo apt -y install libavc1394-0 libavc1394-dev libavc1394-tools
+sudo apt -y install libbluray-dev libbluray-doc libbluray-bin
+sudo apt -y install libbs2b-dev libbs2b0
+sudo apt -y install libcaca-dev
+sudo apt -y install libdc1394-22-dev
+sudo apt -y install libgme-dev
+sudo apt -y install libgsm1-dev
+sudo apt -y install libmodplug-dev
+sudo apt -y install libmp3lame-dev
+sudo apt -y install libopencore-amrnb-dev
+sudo apt -y install libopencore-amrwb-dev
+sudo apt -y install libopenexr-dev
+sudo apt -y install libopenjp2-7-dev
+sudo apt -y install libopus-dev
+sudo apt -y install librtmp-dev
+sudo apt -y install librubberband-dev
+sudo apt -y install libsoxr-dev
+sudo apt -y install libspeex-dev
+sudo apt -y install libtheora-dev
+sudo apt -y install libtwolame-dev
+sudo apt -y install libvorbis-dev
+sudo apt -y install libvpx-dev
+sudo apt -y install libx264-dev
+sudo apt -y install libx265-dev
+sudo apt -y install libxvidcore-dev
+sudo apt -y install libzmq3-dev
+sudo apt -y install libzvbi-dev
+sudo apt -y install libzvbi0
+sudo apt -y install libxine2-dev
+sudo apt -y install flite1-dev libflite-dev
+sudo apt -y install libopenal-dev libopenal0
+sudo apt -y install libopenmpt-dev libopenmpt0
+sudo apt -y install libshine-dev libshine1
+sudo apt -y install libvidstab-dev
+sudo apt -y install libva-dev
+sudo apt -y install libva-drm-dev
+sudo apt -y install libva-x11-dev
+sudo apt -y install libvdpau-dev
+sudo apt -y install libvdpau-va-gl1
+sudo apt -y install libvmaf-dev
+sudo apt -y install libwebp-dev
+sudo apt -y install libsnappy-dev
 	
 rm -rf ~/ffmpeg_sources
 
@@ -239,64 +292,23 @@ cd ~/ffmpeg_sources && git -C dav1d pull 2> /dev/null || git clone --depth 1 htt
 echo "instalar libvmaf"
 cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz && tar xvf v2.1.1.tar.gz && mkdir -p vmaf-2.1.1/libvmaf/build && cd vmaf-2.1.1/libvmaf/build && meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$HOME/ffmpeg_build" --bindir="$HOME/ffmpeg_build/bin" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
 
+# Compilar e instalar libx264
+git clone --depth=1 https://gitlab.com/AOMediaCodec/SVT-AV1.git
+cd SVT-AV1
+cd Build
+cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+make -j $(nproc)
+sudo make install
 
 
-# ... (continuar con las otras compilaciones e instalaciones)
-
-# Compilar e instalar FFmpeg
-sudo apt -y install libchromaprint-tools
-sudo apt -y install frei0r-plugins-dev
-sudo apt -y install qttools5-dev qttools5-dev-tools
-sudo apt -y install libqt5svg5-dev
-sudo apt -y install ladspa-sdk git cmake
-sudo apt -y install libsndfile1-dev libsamplerate-ocaml-dev
-sudo apt -y install libjack-jackd2-dev
-sudo apt -y install libxml* freetype* fontconfig*
-sudo apt-get -y install libbluray-bdj libbluray-* libbluray-dev
-sudo apt -y install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev
-sudo apt -y install liblilv-0-0 liblilv-dev lilv-utils
-sudo apt -y install libiec61883-dev libraw1394-tools libraw1394-doc libraw1394-dev libraw1394-tools
-sudo apt -y install libavc1394-0 libavc1394-dev libavc1394-tools
-sudo apt -y install libbluray-dev libbluray-doc libbluray-bin
-sudo apt -y install libbs2b-dev libbs2b0
-sudo apt -y install libcaca-dev
-sudo apt -y install libdc1394-22-dev
-sudo apt -y install libgme-dev
-sudo apt -y install libgsm1-dev
-sudo apt -y install libmodplug-dev
-sudo apt -y install libmp3lame-dev
-sudo apt -y install libopencore-amrnb-dev
-sudo apt -y install libopencore-amrwb-dev
-sudo apt -y install libopenexr-dev
-sudo apt -y install libopenjp2-7-dev
-sudo apt -y install libopus-dev
-sudo apt -y install librtmp-dev
-sudo apt -y install librubberband-dev
-sudo apt -y install libsoxr-dev
-sudo apt -y install libspeex-dev
-sudo apt -y install libtheora-dev
-sudo apt -y install libtwolame-dev
-sudo apt -y install libvorbis-dev
-sudo apt -y install libvpx-dev
-sudo apt -y install libx264-dev
-sudo apt -y install libx265-dev
-sudo apt -y install libxvidcore-dev
-sudo apt -y install libzmq3-dev
-sudo apt -y install libzvbi-dev
-sudo apt -y install libzvbi0
-sudo apt -y install libxine2-dev
-sudo apt -y install flite1-dev libflite-dev
-sudo apt -y install libopenal-dev libopenal0
-sudo apt -y install libopenmpt-dev libopenmpt0
-sudo apt -y install libshine-dev libshine1
-sudo apt -y install libvidstab-dev
-sudo apt -y install libva-dev
-sudo apt -y install libva-drm-dev
-sudo apt -y install libva-x11-dev
-sudo apt -y install libvdpau-dev
-sudo apt -y install libvdpau-va-gl1
-sudo apt -y install libvmaf-dev
-sudo apt -y install libwebp-dev
+# Compilar e instalar libx265
+sudo apt-get install libnuma-dev && \
+cd ~/ffmpeg_sources && \
+git -C x265_git pull 2> /dev/null || git clone --depth 1 https://bitbucket.org/multicoreware/x265_git -b stable && \
+cd x265_git/build/linux && \
+PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED=off ../../source && \
+PATH="$HOME/bin:$PATH"  make -j $(nproc) && \
+make install
 
 
 echo "clonamos ffmpeg"

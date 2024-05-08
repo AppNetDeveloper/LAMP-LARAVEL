@@ -10,7 +10,7 @@ MARIADBPASSWORD="$5"
 FTP="$6"
 ffmpeg="$7"
 opencv="$8"
-tensorflow="$9"
+TensorFlow="$9"
 
 
 if [ "$WEB_SERVER" = "apache" ]; then
@@ -91,12 +91,12 @@ else
     exit 1
 fi
 
-if [ "$tensorflow" = "install" ]; then
-    echo "Instalando tensorflow.."
-elif [ "$opencv" = "none" ]; then
-    echo "Sin installar tensorflow..."
+if [ "$TensorFlow" = "install" ]; then
+    echo "Instalando TensorFlow.."
+elif [ "$TensorFlow" = "none" ]; then
+    echo "Instalando TensorFlow.."
 else
-    echo "Por favor especifica 'install' o 'none' donde install install tensorflow y none sin instalar tensorflow"
+    echo "Por favor especifica 'install' o 'none' donde install install TensorFlow y none sin instalar TensorFlow"
     exit 1
 fi
 
@@ -553,7 +553,7 @@ fi
 
 
 # Install tensorflow
-if [ "$tensorflow" = "install" ]; then
+if [ "$TensorFlow" = "install" ]; then
             echo "Instalando tensorflow.."
 
         # Obtener la arquitectura de la CPU
@@ -677,14 +677,10 @@ sudo apt -y install -y php8.3-curl
 
 sudo systemctl restart php8.3-fpm 
 sudo systemctl enable php8.3-fpm
-# OR
-# sudo apt -y install libapache2-mod-php8.3
-# When upgrading from an older PHP version:
 
-sudo a2disconf php8.2-fpm
-sudo a2disconf php8.1-fpm
-sudo a2disconf php8.0-fpm
-# On Apache: Enable PHP 8.2 FPM
+
+sudo a2disconf php*-fpm
+# On Apache: Enable PHP 8.3 FPM
 sudo a2enconf php8.3-fpm
 
 sudo apt-get install php-pear
@@ -807,6 +803,7 @@ elif [ "$WEB_SERVER" = "nginx" ]; then
     sudo apt -y install nginx-full
 	sudo apt -y install nginx-*
     sudo apt -y install nginx-module-*
+    sudo apt -y install nginx-full
 
 	
 	
@@ -1363,8 +1360,11 @@ if [ "$FTP" = "install" ]; then
 	# Configurar ProFTPD
 	cp /etc/proftpd/proftpd.conf /etc/proftpd/proftpd.conf.backup
     sed -i 's/^DefaultRoot .*/DefaultRoot ~/g' /etc/proftpd/proftpd.conf
+    sed -i 's/^# DefaultRoot .*/DefaultRoot ~/g' /etc/proftpd/proftpd.conf
     sed -i 's/^RequireValidShell.*/RequireValidShell off/g' /etc/proftpd/proftpd.conf
+    sed -i 's/^# RequireValidShell.*/RequireValidShell off/g' /etc/proftpd/proftpd.conf
     sed -i 's/^PassivePorts.*/PassivePorts 50000 50010/g' /etc/proftpd/proftpd.conf
+    sed -i 's/^# PassivePorts.*/PassivePorts 50000 50010/g' /etc/proftpd/proftpd.conf
 
 	
 	
@@ -1407,6 +1407,8 @@ elif [ "$INSTALL" != "" ]; then
 	wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
 	sudo unzip phpMyAdmin-5.2.1-all-languages.zip
 	mv phpMyAdmin-5.2.1-all-languages phpmyadmin
+
+
 	mkdir /var/www/html/
 	cd /var/www/html/ || exit
 	

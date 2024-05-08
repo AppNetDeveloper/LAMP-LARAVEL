@@ -363,161 +363,161 @@ sudo apt -y install -y curl wget
 if [ "$ffmpeg" = "install" ]; then
     echo "Instalando ffmpeg.."
 
-# Install ffmpeg
-rm -rf ~/ffmpeg_sources
+    # Install ffmpeg
+    rm -rf ~/ffmpeg_sources
 
-# Crear directorios para el código fuente y los binarios
-mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
+    # Crear directorios para el código fuente y los binarios
+    mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
 
-# Clonar el repositorio de fdk-aac
-git clone https://github.com/mstorsjo/fdk-aac && \
-cd fdk-aac && \
-autoreconf -fiv && \
-./configure --enable-shared && \
-make -j$(nproc) && \
-sudo make install && sudo ldconfig
-
-
-# Compilar e instalar libx264
-echo "instalar libx264"
-
-cd ~/ffmpeg_sources && git -C x264 pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264 && PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --enable-pic && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+    # Clonar el repositorio de fdk-aac
+    git clone https://github.com/mstorsjo/fdk-aac && \
+    cd fdk-aac && \
+    autoreconf -fiv && \
+    ./configure --enable-shared && \
+    make -j$(nproc) && \
+    sudo make install && sudo ldconfig
 
 
-# Compilar e instalar libx265
-echo "instalar libx265"
+    # Compilar e instalar libx264
+    echo "instalar libx264"
 
-cd ~/ffmpeg_sources && git -C x265_git pull 2> /dev/null || git clone https://bitbucket.org/multicoreware/x265_git && cd ~/ffmpeg_sources/x265_git/build/linux && cd ~/ffmpeg_sources/x265_git/build/linux/ && chmod 775 multilib.sh && ./multilib.sh
-
-# Compilar e instalar libvpx
-echo "instalar libvpx"
-
-cd ~/ffmpeg_sources && git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && cd libvpx && PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-# Compilar e instalar libfdk-aac
-echo "libfdk-aac"
-
-cd ~/ffmpeg_sources && git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && cd fdk-aac && autoreconf -fiv && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
-
-# Compilar e instalar libopus
-echo "instalar libopus"
-
-cd ~/ffmpeg_sources && git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git && cd opus && ./autogen.sh && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
-
-# Compilar e instalar libaom
-echo "instalar libaom"
-
-cd ~/ffmpeg_sources && git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && mkdir -p aom_build && cd aom_build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_TESTS=OFF -DENABLE_NASM=on ../aom && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-# Compilar e instalar libsvtav1
-echo "libsvtav1"
-
-cd ~/ffmpeg_sources && git -C SVT-AV1 pull 2> /dev/null || git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git && mkdir -p SVT-AV1/build && cd SVT-AV1/build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-# Compilar e instalar libdav1d
-echo "libdav1d"
-
-cd ~/ffmpeg_sources && git -C dav1d pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/dav1d.git && mkdir -p dav1d/build && cd dav1d/build && meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "$HOME/ffmpeg_build" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
-
-# Compilar e instalar libvmaf
-echo "instalar libvmaf"
-cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz && tar xvf v2.1.1.tar.gz && mkdir -p vmaf-2.1.1/libvmaf/build && cd vmaf-2.1.1/libvmaf/build && meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$HOME/ffmpeg_build" --bindir="$HOME/ffmpeg_build/bin" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
+    cd ~/ffmpeg_sources && git -C x264 pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264 && PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --enable-pic && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
 
 
-git clone --depth=1 https://gitlab.com/AOMediaCodec/SVT-AV1.git
-cd SVT-AV1
-cd Build
-cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
-make -j $(nproc)
-sudo make install
+    # Compilar e instalar libx265
+    echo "instalar libx265"
+
+    cd ~/ffmpeg_sources && git -C x265_git pull 2> /dev/null || git clone https://bitbucket.org/multicoreware/x265_git && cd ~/ffmpeg_sources/x265_git/build/linux && cd ~/ffmpeg_sources/x265_git/build/linux/ && chmod 775 multilib.sh && ./multilib.sh
+
+    # Compilar e instalar libvpx
+    echo "instalar libvpx"
+
+    cd ~/ffmpeg_sources && git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && cd libvpx && PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libfdk-aac
+    echo "libfdk-aac"
+
+    cd ~/ffmpeg_sources && git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && cd fdk-aac && autoreconf -fiv && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libopus
+    echo "instalar libopus"
+
+    cd ~/ffmpeg_sources && git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git && cd opus && ./autogen.sh && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libaom
+    echo "instalar libaom"
+
+    cd ~/ffmpeg_sources && git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && mkdir -p aom_build && cd aom_build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_TESTS=OFF -DENABLE_NASM=on ../aom && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libsvtav1
+    echo "libsvtav1"
+
+    cd ~/ffmpeg_sources && git -C SVT-AV1 pull 2> /dev/null || git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git && mkdir -p SVT-AV1/build && cd SVT-AV1/build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libdav1d
+    echo "libdav1d"
+
+    cd ~/ffmpeg_sources && git -C dav1d pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/dav1d.git && mkdir -p dav1d/build && cd dav1d/build && meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "$HOME/ffmpeg_build" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
+
+    # Compilar e instalar libvmaf
+    echo "instalar libvmaf"
+    cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz && tar xvf v2.1.1.tar.gz && mkdir -p vmaf-2.1.1/libvmaf/build && cd vmaf-2.1.1/libvmaf/build && meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$HOME/ffmpeg_build" --bindir="$HOME/ffmpeg_build/bin" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
 
 
-# Compilar e instalar libx265
-sudo apt-get install libnuma-dev && \
-cd ~/ffmpeg_sources && \
-git -C x265_git pull 2> /dev/null || git clone --depth 1 https://bitbucket.org/multicoreware/x265_git -b stable && \
-cd x265_git/build/linux && \
-PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED=off ../../source && \
-PATH="$HOME/bin:$PATH"  make -j $(nproc) && \
-make install
+    git clone --depth=1 https://gitlab.com/AOMediaCodec/SVT-AV1.git
+    cd SVT-AV1
+    cd Build
+    cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+    make -j $(nproc)
+    sudo make install
 
 
-echo "clonamos ffmpeg"
-cd ~/ffmpeg_sources
-git clone https://github.com/FFmpeg/FFmpeg.git
-mv FFmpeg ffmpeg
-cd ffmpeg
+    # Compilar e instalar libx265
+    sudo apt-get install libnuma-dev && \
+    cd ~/ffmpeg_sources && \
+    git -C x265_git pull 2> /dev/null || git clone --depth 1 https://bitbucket.org/multicoreware/x265_git -b stable && \
+    cd x265_git/build/linux && \
+    PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED=off ../../source && \
+    PATH="$HOME/bin:$PATH"  make -j $(nproc) && \
+    make install
 
 
-# Corregir la versión de FFmpeg
-touch VERSION
-
-echo "7.0.git">RELEASE && cp VERSION VERSION.bak && echo -e "$(cat VERSION.bak) [$(date +%Y-%m-%d)] [$(cat RELEASE)] " > VERSION
-
-echo "pasamos a compilar"
-
-# Compilar e instalar FFmpeg
-PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
---prefix="$HOME/ffmpeg_build" \
---pkg-config-flags="--static" \
---extra-cflags="-I$HOME/ffmpeg_build/include" \
---extra-ldflags="-L$HOME/ffmpeg_build/lib" \
---extra-libs="-lpthread -lm" \
---ld="g++" \
---bindir="$HOME/bin" \
---enable-gpl \
---enable-openssl \
---enable-libaom \
---enable-libass \
---enable-libfdk-aac \
---enable-libfreetype \
---enable-libmp3lame \
---enable-libopus \
---enable-libsvtav1 \
---enable-libdav1d \
---enable-libvorbis \
---enable-libvpx \
---enable-libx264 \
---enable-libx265 \
---enable-nonfree \
---enable-libopenjpeg \
---enable-libpulse \
---enable-chromaprint \
---enable-frei0r \
---enable-libbluray \
---enable-libbs2b \
---enable-librubberband \
---enable-libspeex \
---enable-libtheora \
---enable-libfontconfig \
---enable-libfribidi \
---enable-libxml2 \
---enable-libxvid \
---enable-version3 \
---enable-libvidstab \
---enable-libcaca \
---enable-libopenmpt \
---enable-libgme \
---enable-opengl \
---enable-libsnappy \
---enable-libshine \
---enable-libtwolame \
---enable-libvo-amrwbenc \
---enable-libflite \
---enable-libsoxr \
---enable-ladspa \
-&& PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install && hash -r
+    echo "clonamos ffmpeg"
+    cd ~/ffmpeg_sources
+    git clone https://github.com/FFmpeg/FFmpeg.git
+    mv FFmpeg ffmpeg
+    cd ffmpeg
 
 
-source ~/.profile
+    # Corregir la versión de FFmpeg
+    touch VERSION
+
+    echo "7.0.git">RELEASE && cp VERSION VERSION.bak && echo -e "$(cat VERSION.bak) [$(date +%Y-%m-%d)] [$(cat RELEASE)] " > VERSION
+
+    echo "pasamos a compilar"
+
+    # Compilar e instalar FFmpeg
+    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
+    --prefix="$HOME/ffmpeg_build" \
+    --pkg-config-flags="--static" \
+    --extra-cflags="-I$HOME/ffmpeg_build/include" \
+    --extra-ldflags="-L$HOME/ffmpeg_build/lib" \
+    --extra-libs="-lpthread -lm" \
+    --ld="g++" \
+    --bindir="$HOME/bin" \
+    --enable-gpl \
+    --enable-openssl \
+    --enable-libaom \
+    --enable-libass \
+    --enable-libfdk-aac \
+    --enable-libfreetype \
+    --enable-libmp3lame \
+    --enable-libopus \
+    --enable-libsvtav1 \
+    --enable-libdav1d \
+    --enable-libvorbis \
+    --enable-libvpx \
+    --enable-libx264 \
+    --enable-libx265 \
+    --enable-nonfree \
+    --enable-libopenjpeg \
+    --enable-libpulse \
+    --enable-chromaprint \
+    --enable-frei0r \
+    --enable-libbluray \
+    --enable-libbs2b \
+    --enable-librubberband \
+    --enable-libspeex \
+    --enable-libtheora \
+    --enable-libfontconfig \
+    --enable-libfribidi \
+    --enable-libxml2 \
+    --enable-libxvid \
+    --enable-version3 \
+    --enable-libvidstab \
+    --enable-libcaca \
+    --enable-libopenmpt \
+    --enable-libgme \
+    --enable-opengl \
+    --enable-libsnappy \
+    --enable-libshine \
+    --enable-libtwolame \
+    --enable-libvo-amrwbenc \
+    --enable-libflite \
+    --enable-libsoxr \
+    --enable-ladspa \
+    && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install && hash -r
 
 
-export PATH="$HOME/bin:$PATH"
+    source ~/.profile
 
 
-echo "Instalación completada con éxito."
+    export PATH="$HOME/bin:$PATH"
 
-# final ffmpeg install
+
+    echo "Instalación completada con éxito."
+
+    # final ffmpeg install
 
 fi
 
@@ -525,29 +525,29 @@ fi
 # install opencv
 if [ "$opencv" = "install" ]; then
     echo "Instalando opencv.."
-# VERSION TO BE INSTALLED
+    # VERSION TO BE INSTALLED
 
-OPENCV_VERSION='4.9.0'
-
-
-
-# 3. INSTALL THE LIBRARY
-
-sudo apt-get install -y unzip wget zip
-wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
-unzip ${OPENCV_VERSION}.zip
-rm ${OPENCV_VERSION}.zip
-mv opencv-${OPENCV_VERSION} OpenCV
-cd OpenCV
-mkdir build
-cd build
-cmake -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DBUILD_EXAMPLES=ON -DENABLE_PRECOMPILED_HEADERS=OFF ..
-make -j$(nproc)
-sudo make install
-sudo ldconfig
+    OPENCV_VERSION='4.9.0'
 
 
-# final opencv
+
+    # 3. INSTALL THE LIBRARY
+
+    sudo apt-get install -y unzip wget zip
+    wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
+    unzip ${OPENCV_VERSION}.zip
+    rm ${OPENCV_VERSION}.zip
+    mv opencv-${OPENCV_VERSION} OpenCV
+    cd OpenCV
+    mkdir build
+    cd build
+    cmake -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DBUILD_EXAMPLES=ON -DENABLE_PRECOMPILED_HEADERS=OFF ..
+    make -j$(nproc)
+    sudo make install
+    sudo ldconfig
+
+
+    # final opencv
 
 fi
 
@@ -802,8 +802,9 @@ elif [ "$WEB_SERVER" = "nginx" ]; then
 	sudo apt -y autoremove apache2 apache2-utils
 
 	sudo apt list nginx
-	sudo apt -y install nginx
-	sudo -y apt-get install nginx-extras
+	sudo apt -y install nginx=1.24*
+	sudo apt -y install nginx-extras
+    sudo apt -y install nginx-full-extras
 	sudo apt -y install nginx-*
     sudo apt -y install nginx-module-*
 
@@ -1360,11 +1361,11 @@ if [ "$FTP" = "install" ]; then
 	sudo apt -y install -y proftpd
 	
 	# Configurar ProFTPD
-	sudo tee "/etc/proftpd/proftpd.conf" > /dev/null <<EOF
-	DefaultRoot ~
-	RequireValidShell off
-	PassivePorts 50000 50010
-	EOF
+	cp /etc/proftpd/proftpd.conf /etc/proftpd/proftpd.conf.backup
+    sed -i 's/^DefaultRoot .*/DefaultRoot ~/g' /etc/proftpd/proftpd.conf
+    sed -i 's/^RequireValidShell.*/RequireValidShell off/g' /etc/proftpd/proftpd.conf
+    sed -i 's/^PassivePorts.*/PassivePorts 50000 50010/g' /etc/proftpd/proftpd.conf
+
 	
 	
 	    # Verificar si el directorio existe

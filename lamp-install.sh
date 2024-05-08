@@ -1342,6 +1342,10 @@ fi
 sudo apt -y install redis-server
 sudo systemctl enable --now redis-server.service
 
+cd /var/www/ || exit
+	rm -rf *
+	rm -rf .*
+    
 #Installar servidor ftp
 if [ "$FTP" = "install" ]; then
 	    # Función para generar una contraseña segura
@@ -1400,9 +1404,7 @@ elif [ "$INSTALL" != "" ]; then
     echo 'Instalando appnetd_cloud y limpiar antes de empezar'
 
 
-	cd /var/www/ || exit
-	rm -rf *
-	rm -rf .*
+	
 	sudo apt -y install -y wget zip
 	wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
 	sudo unzip phpMyAdmin-5.2.1-all-languages.zip

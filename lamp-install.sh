@@ -804,7 +804,7 @@ elif [ "$WEB_SERVER" = "nginx" ]; then
 	sudo apt list nginx
 	sudo apt -y install nginx=1.24*
 	sudo apt -y install nginx-extras
-    sudo apt -y install nginx-full-extras
+    sudo apt -y install nginx-full
 	sudo apt -y install nginx-*
     sudo apt -y install nginx-module-*
 

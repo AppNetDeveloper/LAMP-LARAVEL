@@ -132,7 +132,10 @@ sudo apt -y autoremove --purge
 sudo apt -y install -y curl wget
 
 # Install ffmpeg
+rm -rf ~/ffmpeg_sources
 
+# Crear directorios para el código fuente y los binarios
+mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
 
 # Clonar el repositorio de fdk-aac
 git clone https://github.com/mstorsjo/fdk-aac && \
@@ -232,12 +235,14 @@ sudo apt -y install libvdpau-dev
 sudo apt -y install libvdpau-va-gl1
 sudo apt -y install libvmaf-dev
 sudo apt -y install libwebp-dev
-sudo apt -y install libsnappy-dev
-	
-rm -rf ~/ffmpeg_sources
+sudo apt -y install libsnappy-dev	
+sudo apt -y install libcdio-dev
+sudo apt -y install git-all cmake cmake-curses-gui build-essential gcc-arm-linux-gnueabi g++-arm-linux-gnueabi yasmapt install cdparanoia
+sudo apt -y install cdparanoia
+sudo apt-get install -y libcdio-utils
+sudo apt -y install libcdparanoia-dev libcdparanoia0
+sudo apt -y install libcdio-paranoia libcdio-paranoia-dev
 
-# Crear directorios para el código fuente y los binarios
-mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
 
 # Instalar NASM
 sudo apt-get -y install nasm 
@@ -359,7 +364,6 @@ PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./conf
 --enable-frei0r \
 --enable-libbluray \
 --enable-libbs2b \
---enable-libcdio \
 --enable-librubberband \
 --enable-libspeex \
 --enable-libtheora \
@@ -499,8 +503,6 @@ sudo ldconfig
 # final opencv
 
 # Install tensorflow
-
-#!/bin/sh
 
 # Obtener la arquitectura de la CPU
 ARCH=$(uname -m)

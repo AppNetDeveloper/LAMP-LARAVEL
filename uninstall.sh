@@ -100,6 +100,6 @@ sudo rm -rf /etc/apt/sources.list.d/webmin.list # Repositorio de Webmin
 
 sudo apt -y autoremove # Elimina paquetes no utilizados
 
-sudo apt -y update # Actualiza la lista de paquetes
+#sudo apt -y update # Actualiza la lista de paquetes
 
 sudo dpkg --configure -a

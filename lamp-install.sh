@@ -2,47 +2,15 @@
 cd ~ || exit
 
 
-# Obtener la arquitectura de la CPU
-ARCH=$(uname -m)
-
-if [ "$ARCH" = "x86_64" ]; then
-  echo "**Añadiendo repositorios Debian nonfree para x86_64 (Debian 12)**"
-
-  # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free" al archivo /etc/apt/sources.list
-  echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
-
-  # Actualizar la lista de paquetes
-  sudo apt update
-
-elif [ "$ARCH" = "aarch64" ]; then
-  echo "**Añadiendo repositorios Debian nonfree para aarch64 (Debian 12)**"
-
-  # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free"  al archivo /etc/apt/sources.list
-  echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
-echo "deb [arch=armhf] http://httpredir.debian.org/debian/ buster main contrib non-free" | sudo tee -a /etc/apt/sources.list
-  # Actualizar la lista de paquetes
-  sudo apt update
-
-else
-  echo "**Arquitectura de CPU no compatible: $ARCH**"
-  echo "Este script solo funciona en sistemas x86_64 o aarch64."
-  exit 1
-fi
-
-echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
-
-sudo apt-get -y update
-sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
-# sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
-sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
-
-
 WEB_SERVER="$1"
 DB="$2"
 INSTALL="$3"
 VPN="$4"
 MARIADBPASSWORD="$5"
 FTP="$6"
+ffmpeg="$7"
+opencv="$8"
+
 if [ "$WEB_SERVER" = "apache" ]; then
     echo "Instalando Apache..."
 elif [ "$WEB_SERVER" = "nginx" ]; then
@@ -102,6 +70,60 @@ else
     fi
 fi
 
+
+if [ "$ffmpeg" = "install" ]; then
+    echo "Instalando ffmpeg.."
+elif [ "$ffmpeg" = "none" ]; then
+    echo "Instalando ffmpeg..."
+else
+    echo "Por favor especifica 'install' o 'none' donde install install ffmpeg y none sin instalar ffmpeg"
+    exit 1
+fi
+
+if [ "$opencv" = "install" ]; then
+    echo "Instalando opencv.."
+elif [ "$opencv" = "none" ]; then
+    echo "Instalando opencv..."
+else
+    echo "Por favor especifica 'install' o 'none' donde install install opencv y none sin instalar opencv"
+    exit 1
+fi
+
+
+# Obtener la arquitectura de la CPU
+ARCH=$(uname -m)
+
+if [ "$ARCH" = "x86_64" ]; then
+  echo "**Añadiendo repositorios Debian nonfree para x86_64 (Debian 12)**"
+
+  # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free" al archivo /etc/apt/sources.list
+  echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
+
+  # Actualizar la lista de paquetes
+  sudo apt update
+
+elif [ "$ARCH" = "aarch64" ]; then
+  echo "**Añadiendo repositorios Debian nonfree para aarch64 (Debian 12)**"
+
+  # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free"  al archivo /etc/apt/sources.list
+  echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
+echo "deb [arch=armhf] http://httpredir.debian.org/debian/ buster main contrib non-free" | sudo tee -a /etc/apt/sources.list
+  # Actualizar la lista de paquetes
+  sudo apt update
+
+else
+  echo "**Arquitectura de CPU no compatible: $ARCH**"
+  echo "Este script solo funciona en sistemas x86_64 o aarch64."
+  exit 1
+fi
+
+echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
+
+sudo apt-get -y update
+sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
+# sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
+sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
+
 sudo rm -rf /var/www/html/
 sudo mkdir /var/www/
 sudo mkdir /var/www/html
@@ -109,43 +131,85 @@ sudo mkdir /var/www/html
 # Instalar sudo
 apt -y install sudo
 
-# Save existing php package list to packages.txt file
-sudo dpkg -l | grep php | tee packages.txt
+# 2. INSTALL THE DEPENDENCIES
 
-# Add Ondrej's repo source and signing key along with dependencies
-sudo apt -y install -y apt-transport-https ca-certificates gnupg2 software-properties-common lsb-release
+# Build tools:
+sudo apt-get install -y build-essential
+sudo apt-get install -y cmake
 
-sudo curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
-sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+# GUI (if you want to use GTK instead of Qt, replace 'qt5-default' with 'libgtkglext1-dev' and remove '-DWITH_QT=ON' option in CMake):
+sudo apt-get install -y qt5-default
+sudo apt-get install -y libvtk6-dev
 
-sudo add-apt-repository -y ppa:ondrej/php <<EOF
-
-EOF
-
-sudo apt -y update
-## Remove old packages
-sudo apt -y remove --purge php*
-sudo apt -y purge php*
-sudo apt -y autoremove --purge
-
-# Instalar curl y wget
-sudo apt -y install -y curl wget
-
-# Install ffmpeg
-rm -rf ~/ffmpeg_sources
-
-# Crear directorios para el código fuente y los binarios
-mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
-
-# Clonar el repositorio de fdk-aac
-git clone https://github.com/mstorsjo/fdk-aac && \
-cd fdk-aac && \
-autoreconf -fiv && \
-./configure --enable-shared && \
-make -j$(nproc) && \
-sudo make install && sudo ldconfig
+# Media I/O:
+sudo apt-get install -y zlib1g-dev
+sudo apt-get install -y libjpeg-dev
+sudo apt-get install -y libwebp-dev
+sudo apt-get install -y libpng-dev
+sudo apt-get install -y libtiff5-dev
+sudo apt-get install -y libjasper-dev
+sudo apt-get install -y libopenexr-dev
+sudo apt-get install -y libgdal-dev
 
 
+# Video I/O:
+sudo apt-get install -y libdc1394-22-dev
+sudo apt-get install -y libavcodec-dev
+sudo apt-get install -y libavformat-dev
+sudo apt-get install -y libswscale-dev
+sudo apt-get install -y libtheora-dev
+sudo apt-get install -y libvorbis-dev
+sudo apt-get install -y libxvidcore-dev
+sudo apt-get install -y libx264-dev
+sudo apt-get install -y yasm
+sudo apt-get install -y libopencore-amrnb-dev
+sudo apt-get install -y libopencore-amrwb-dev
+sudo apt-get install -y libv4l-dev
+sudo apt-get install -y libxine2-dev
+
+
+# Parallelism and linear algebra libraries:
+sudo apt-get install -y libtbb-dev
+sudo apt-get install -y libeigen3-dev
+
+# Python:
+sudo apt-get install -y python-dev
+sudo apt-get install -y python-tk
+sudo apt-get install -y python-numpy
+sudo apt-get install -y python3-dev
+sudo apt-get install -y python3-tk
+sudo apt-get install -y python3-numpy
+
+# Java:
+sudo apt-get install -y ant default-jdk
+
+# Documentation:
+sudo apt-get install -y doxygen
+
+#WHOIS
+sudo apt -y install whois
+
+#Necesarios OpenCV
+sudo apt -y  install build-essential 
+sudo apt -y  cmake pkg-config 
+sudo apt -y  libjpeg-dev 
+sudo apt -y  libpng-dev 
+sudo apt -y  libtiff-dev 
+sudo apt -y  libjasper-dev 
+sudo apt -y  libavcodec-dev 
+sudo apt -y  libavformat-dev 
+sudo apt -y  libswscale-dev 
+sudo apt -y  libgstreamer1.0-dev 
+sudo apt -y  libgstreamer-plugins-base1.0-dev 
+sudo apt -y  libv4l2-dev 
+sudo apt -y  python3-dev 
+sudo apt -y  python3-numpy
+
+sudo apt -y install libopencv-dev python3-opencv
+python3 -c "import cv2; print(cv2.__version__)"
+
+apt -y install graphicsmagick-imagemagick-compat
+apt -y install imagemagick
 # Instalar dependencias
 sudo apt-get install -y autoconf
 sudo apt-get install -y build-essential
@@ -242,6 +306,8 @@ sudo apt -y install cdparanoia
 sudo apt-get install -y libcdio-utils
 sudo apt -y install libcdparanoia-dev libcdparanoia0
 sudo apt -y install libcdio-paranoia libcdio-paranoia-dev
+sudo apt -y install ffmpeg
+
 
 
 # Instalar NASM
@@ -254,6 +320,51 @@ sudo apt -y install libx265-dev
 sudo apt -y install openssl libssl-dev
 
 sudo apt -y install libsvtav1-dev
+
+
+# Save existing php package list to packages.txt file
+sudo dpkg -l | grep php | tee packages.txt
+
+# Add Ondrej's repo source and signing key along with dependencies
+sudo apt -y install -y apt-transport-https ca-certificates gnupg2 software-properties-common lsb-release
+
+sudo curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
+sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+
+sudo add-apt-repository -y ppa:ondrej/php <<EOF
+
+EOF
+
+sudo apt -y update
+## Remove old packages
+sudo apt -y remove --purge php*
+sudo apt -y purge php*
+sudo apt -y autoremove --purge
+
+# Instalar curl y wget
+sudo apt -y install -y curl wget
+
+
+
+
+#INSTALL FFMPEG SOLO SI ES INSTALL
+
+if [ "$ffmpeg" = "install" ]; then
+    echo "Instalando ffmpeg.."
+
+# Install ffmpeg
+rm -rf ~/ffmpeg_sources
+
+# Crear directorios para el código fuente y los binarios
+mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
+
+# Clonar el repositorio de fdk-aac
+git clone https://github.com/mstorsjo/fdk-aac && \
+cd fdk-aac && \
+autoreconf -fiv && \
+./configure --enable-shared && \
+make -j$(nproc) && \
+sudo make install && sudo ldconfig
 
 
 # Compilar e instalar libx264
@@ -395,93 +506,18 @@ export PATH="$HOME/bin:$PATH"
 
 echo "Instalación completada con éxito."
 
-# final ffmpeg 
+# final ffmpeg install
+
+fi
+
 
 # install opencv
-
+if [ "$opencv" = "install" ]; then
+    echo "Instalando opencv.."
 # VERSION TO BE INSTALLED
 
 OPENCV_VERSION='4.9.0'
 
-# 2. INSTALL THE DEPENDENCIES
-
-# Build tools:
-sudo apt-get install -y build-essential
-sudo apt-get install -y cmake
-
-# GUI (if you want to use GTK instead of Qt, replace 'qt5-default' with 'libgtkglext1-dev' and remove '-DWITH_QT=ON' option in CMake):
-sudo apt-get install -y qt5-default
-sudo apt-get install -y libvtk6-dev
-
-# Media I/O:
-sudo apt-get install -y zlib1g-dev
-sudo apt-get install -y libjpeg-dev
-sudo apt-get install -y libwebp-dev
-sudo apt-get install -y libpng-dev
-sudo apt-get install -y libtiff5-dev
-sudo apt-get install -y libjasper-dev
-sudo apt-get install -y libopenexr-dev
-sudo apt-get install -y libgdal-dev
-
-
-# Video I/O:
-sudo apt-get install -y libdc1394-22-dev
-sudo apt-get install -y libavcodec-dev
-sudo apt-get install -y libavformat-dev
-sudo apt-get install -y libswscale-dev
-sudo apt-get install -y libtheora-dev
-sudo apt-get install -y libvorbis-dev
-sudo apt-get install -y libxvidcore-dev
-sudo apt-get install -y libx264-dev
-sudo apt-get install -y yasm
-sudo apt-get install -y libopencore-amrnb-dev
-sudo apt-get install -y libopencore-amrwb-dev
-sudo apt-get install -y libv4l-dev
-sudo apt-get install -y libxine2-dev
-
-
-# Parallelism and linear algebra libraries:
-sudo apt-get install -y libtbb-dev
-sudo apt-get install -y libeigen3-dev
-
-# Python:
-sudo apt-get install -y python-dev
-sudo apt-get install -y python-tk
-sudo apt-get install -y python-numpy
-sudo apt-get install -y python3-dev
-sudo apt-get install -y python3-tk
-sudo apt-get install -y python3-numpy
-
-# Java:
-sudo apt-get install -y ant default-jdk
-
-# Documentation:
-sudo apt-get install -y doxygen
-
-#WHOIS
-sudo apt -y install whois
-
-#Necesarios OpenCV
-sudo apt -y  install build-essential 
-sudo apt -y  cmake pkg-config 
-sudo apt -y  libjpeg-dev 
-sudo apt -y  libpng-dev 
-sudo apt -y  libtiff-dev 
-sudo apt -y  libjasper-dev 
-sudo apt -y  libavcodec-dev 
-sudo apt -y  libavformat-dev 
-sudo apt -y  libswscale-dev 
-sudo apt -y  libgstreamer1.0-dev 
-sudo apt -y  libgstreamer-plugins-base1.0-dev 
-sudo apt -y  libv4l2-dev 
-sudo apt -y  python3-dev 
-sudo apt -y  python3-numpy
-
-sudo apt -y install libopencv-dev python3-opencv
-python3 -c "import cv2; print(cv2.__version__)"
-
-apt -y install graphicsmagick-imagemagick-compat
-apt -y install imagemagick
 
 
 # 3. INSTALL THE LIBRARY
@@ -501,6 +537,9 @@ sudo ldconfig
 
 
 # final opencv
+
+fi
+
 
 # Install tensorflow
 

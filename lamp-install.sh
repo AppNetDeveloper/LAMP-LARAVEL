@@ -740,6 +740,43 @@ nvm use 22
 nvm alias default 22
 
 
+sudo apt -y install curl gnupg2 ca-certificates lsb-release debian-archive-keyring
+sudo apt -y install curl gnupg2 ca-certificates lsb-release ubuntu-keyring
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
+    | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+
+gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+http://nginx.org/packages/debian `lsb_release -cs` nginx" \
+    | sudo tee /etc/apt/sources.list.d/nginx2.list
+
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" \
+    | sudo tee /etc/apt/sources.list.d/nginx3.list
+
+   echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
+    | sudo tee /etc/apt/preferences.d/99nginx
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" \
+    | sudo tee /etc/apt/sources.list.d/nginx4.list
+
+echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
+    | sudo tee /etc/apt/preferences.d/99nginx
+
+
+curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
+| sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
+    | sudo tee /etc/apt/sources.list.d/nginx.list
+
+sudo apt -y update
+
+
+
+
 if [ "$WEB_SERVER" = "apache" ]; then
     echo "Instalando Apache..."
     # Aquí va el código para instalar Apache.
@@ -1345,7 +1382,7 @@ sudo systemctl enable --now redis-server.service
 cd /var/www/ || exit
 	rm -rf *
 	rm -rf .*
-    
+
 #Installar servidor ftp
 if [ "$FTP" = "install" ]; then
 	    # Función para generar una contraseña segura
@@ -1428,10 +1465,10 @@ elif [ "$INSTALL" != "" ]; then
  
 	 if [ "$FTP" = "install" ]; then
 	    	sed -i "s/^\(FTP_HOST=\).*/\1localhost/" "$ENV_FILE"
-		sed -i "s/^\(FTP_PORT=\).*/\121" "$ENV_FILE"
+		sed -i "s/^\(FTP_PORT=\).*/\121/" "$ENV_FILE"
 		sed -i "s/^\(FTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
   		sed -i "s/^\(FTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
-		sed -i "s/^\(FTP_ROOT=\).*/\1//" "$ENV_FILE"
+		sed -i "s/^\(FTP_ROOT=\).*/\1\//" "$ENV_FILE"
 		sed -i "s/^\(FTP_PASSIVE=\).*/\1false/" "$ENV_FILE"
 	fi
  	
@@ -1471,7 +1508,7 @@ elif [ "$INSTALL" != "" ]; then
 	echo 'dar permiso composer root y instalar y actualizar'
 	export COMPOSER_ALLOW_SUPERUSER=1
 	/usr/local/bin/composer update
-	/usr/bin/npm run prod
+urbinpm run build
 	echo 'dar los permisos necesario'
  	sudo rm -rf /var/www/html/public/storage
   	sudo php artisan storage:link
@@ -1482,7 +1519,7 @@ elif [ "$INSTALL" != "" ]; then
 	sudo chmod 777 /var/www/html/storage/logs/
 	sudo chmod 777 /var/www/html/storage/framework/sessions
 	sudo chmod 777 /var/www/html/storage/framework/views
-	echo "limpiar git para que despues el auto update de Jenkins funcione"
+
 	sudo rm -rf .git
 else
     echo "Por favor especifica none o install en instalacion "
@@ -1524,13 +1561,6 @@ else
     exit 1
 fi
 
-
-echo 'Contraseña de Jenkins:' 
-sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-echo 'jenkins interface : ip:8080'
-echo 'servidor web es ip con la ruta de los archivos /www/var/html'
-# Mostrar credenciales de usuario FTP
-echo "Usuario FTP : $FTP_USER"
 echo "Contraseña FTP : $FTP_PASSWORD"
 
 

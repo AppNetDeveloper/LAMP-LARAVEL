@@ -34,12 +34,21 @@ fi
 
 if [ "$VPN" = "none" ]; then
     echo 'Sin VPN P2P Zerotier, Sin abrir Puertos '
+    IP=localhost
 elif [ "$VPN" != "" ]; then
     echo 'Installar VPN Zerotier'
+	rm /etc/apt/sources.list.d/zerotier* 
+    sudo pt remove --yes zerotier-one
+    sudo curl -s https://install.zerotier.com | sudo bash
+	sudo zerotier-cli join "$VPN"
+	sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'
+    IP=$(sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+    echo "IP ZEROTIER: $IP"
 else
     echo "Por favor especifica none o EL ID RED en instalacion "
     exit 1
 fi
+
 
 if [ "$FTP" = "install" ]; then
     echo "Instalando ftp server..."
@@ -335,7 +344,7 @@ server {
 
         index index.html index.htm index.nginx-debian.html index.php;
 
-        server_name _;
+        server_name localhost $IP 127.0.0.1; # Cambia el nombre de servidor si es necesario.
 
         location / {
                 try_files \$uri \$uri/ /index.php?\$query_string;
@@ -356,7 +365,8 @@ sudo bash -c 'cat >  /etc/nginx/sites-available/phpmyadmin.conf << EOL
 server {
     listen 8081;
         listen [::]:8081;
-    server_name localhost; # Cambia el nombre de servidor si es necesario.
+
+    server_name localhost $IP 127.0.0.1; # Cambia el nombre de servidor si es necesario.
 
     root /var/www/phpmyadmin;
 
@@ -1454,6 +1464,7 @@ elif [ "$INSTALL" != "" ]; then
 	sed -i "s/^\(DB_DATABASE=\).*/\1${DB}/" "$ENV_FILE"
 	sed -i "s/^\(DB_USERNAME=\).*/\1${NEW_USERNAME}/" "$ENV_FILE"
 	sed -i "s/^\(DB_PASSWORD=\).*/\1${NEW_PASSWORD}/" "$ENV_FILE"
+    sed -i "s/^\(APP_URL=\).*/\1${IP}/" "$ENV_FILE"
  
 
  
@@ -1499,21 +1510,6 @@ sudo chown -R :www-data /var/www/html
 sudo chmod -R g+rwx /var/www/html
 sudo chown -R :nginx /var/www/html
 sudo chmod -R g+rwx /var/www/html
-
-
-if [ "$VPN" = "none" ]; then
-    echo 'Sin VPN P2P Zerotier, Sin abrir Puertos '
-    IP=localhost
-elif [ "$VPN" != "" ]; then
-    echo 'Installar VPN Zerotier'
-	rm /etc/apt/sources.list.d/zerotier* 
-    sudo pt remove --yes zerotier-one
-    sudo curl -s https://install.zerotier.com | sudo bash
-	sudo zerotier-cli join "$VPN"
-	sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'
-    IP=$(sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
-    echo "IP ZEROTIER: $IP"
-fi
 
 
 

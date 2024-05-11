@@ -2,25 +2,16 @@
 cd ~ || exit
 
 
-WEB_SERVER="$1"
-DB="$2"
-INSTALL="$3"
-VPN="$4"
-MARIADBPASSWORD="$5"
-FTP="$6"
-ffmpeg="$7"
-opencv="$8"
-TensorFlow="$9"
 
+DB="$1"
+INSTALL="$2"
+VPN="$3"
+MARIADBPASSWORD="$4"
+FTP="$5"
+ffmpeg="$6"
+opencv="$7"
+TensorFlow="$8"
 
-if [ "$WEB_SERVER" = "apache" ]; then
-    echo "Instalando Apache..."
-elif [ "$WEB_SERVER" = "nginx" ]; then
-    echo "Instalando Nginx..."
-else
-    echo "Por favor especifica 'apache' o 'nginx' como argumento al ejecutar este script. Ejemplo: sh install.sh apache o sh install.sh nginx"
-    exit 1
-fi
 
 if [ "$DB" = "none" ]; then
     echo "Sin MariaDB...."
@@ -130,11 +121,27 @@ fi
 
 echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
 
+# Crear una copia de seguridad del archivo sources.list
+cp /etc/apt/sources.list /etc/apt/sources.list.bak
+
+# Eliminar líneas duplicadas
+sed -i 'd/^\s*\#/g' /etc/apt/sources.list # Eliminar líneas de comentario
+sed -i 'd/\s*$/g' /etc/apt/sources.list # Eliminar líneas vacías
+sort /etc/apt/sources.list | uniq -d > /tmp/sources.list.uniq
+
+# Reemplazar el archivo sources.list con la versión depurada
+mv /tmp/sources.list.uniq /etc/apt/sources.list
+
+# Actualizar la caché de paquetes
+sudo apt update
+
 sudo apt-get -y update
 sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
 # sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
 sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
+systemctl daemon-reload
 
+# Crear directorio de instalación
 sudo rm -rf /var/www/html/
 sudo mkdir /var/www/
 sudo mkdir /var/www/html
@@ -142,606 +149,10 @@ sudo mkdir /var/www/html
 # Instalar sudo
 apt -y install sudo
 
-# 2. INSTALL THE DEPENDENCIES
-
-# Build tools:
-sudo apt-get install -y build-essential
-sudo apt-get install -y cmake
-
-# GUI (if you want to use GTK instead of Qt, replace 'qt5-default' with 'libgtkglext1-dev' and remove '-DWITH_QT=ON' option in CMake):
-sudo apt-get install -y qt5-default
-sudo apt-get install -y libvtk6-dev
-
-# Media I/O:
-sudo apt-get install -y zlib1g-dev
-sudo apt-get install -y libjpeg-dev
-sudo apt-get install -y libwebp-dev
-sudo apt-get install -y libpng-dev
-sudo apt-get install -y libtiff5-dev
-sudo apt-get install -y libjasper-dev
-sudo apt-get install -y libopenexr-dev
-sudo apt-get install -y libgdal-dev
-
-
-# Video I/O:
-sudo apt-get install -y libdc1394-22-dev
-sudo apt-get install -y libavcodec-dev
-sudo apt-get install -y libavformat-dev
-sudo apt-get install -y libswscale-dev
-sudo apt-get install -y libtheora-dev
-sudo apt-get install -y libvorbis-dev
-sudo apt-get install -y libxvidcore-dev
-sudo apt-get install -y libx264-dev
-sudo apt-get install -y yasm
-sudo apt-get install -y libopencore-amrnb-dev
-sudo apt-get install -y libopencore-amrwb-dev
-sudo apt-get install -y libv4l-dev
-sudo apt-get install -y libxine2-dev
-
-
-# Parallelism and linear algebra libraries:
-sudo apt-get install -y libtbb-dev
-sudo apt-get install -y libeigen3-dev
-
-# Python:
-sudo apt-get install -y python-dev
-sudo apt-get install -y python-tk
-sudo apt-get install -y python-numpy
-sudo apt-get install -y python3-dev
-sudo apt-get install -y python3-tk
-sudo apt-get install -y python3-numpy
-
-# Java:
-sudo apt-get install -y ant default-jdk
-
-# Documentation:
-sudo apt-get install -y doxygen
-
-#WHOIS
-sudo apt -y install whois
-
-#Necesarios OpenCV
-sudo apt -y  install build-essential 
-sudo apt -y  cmake pkg-config 
-sudo apt -y  libjpeg-dev 
-sudo apt -y  libpng-dev 
-sudo apt -y  libtiff-dev 
-sudo apt -y  libjasper-dev 
-sudo apt -y  libavcodec-dev 
-sudo apt -y  libavformat-dev 
-sudo apt -y  libswscale-dev 
-sudo apt -y  libgstreamer1.0-dev 
-sudo apt -y  libgstreamer-plugins-base1.0-dev 
-sudo apt -y  libv4l2-dev 
-sudo apt -y  python3-dev 
-sudo apt -y  python3-numpy
-
-sudo apt -y install libopencv-dev python3-opencv
-python3 -c "import cv2; print(cv2.__version__)"
-
-apt -y install graphicsmagick-imagemagick-compat
-apt -y install imagemagick
-# Instalar dependencias
-sudo apt-get install -y autoconf
-sudo apt-get install -y build-essential
-sudo apt-get install -y libass-dev
-sudo apt-get install -y libdav1d-dev
-sudo apt-get install -y libmp3lame-dev
-sudo apt-get install -y yasm
-sudo apt-get install -y libopus-dev
-sudo apt-get install -y openssl
-sudo apt-get install -y libssl-dev
-
-# Obtener otras dependencias
-sudo apt-get install -y autoconf
-sudo apt-get install -y automake
-sudo apt-get install -y build-essential
-sudo apt-get install -y cmake
-sudo apt-get install -y git
-sudo apt-get install -y libass-dev
-sudo apt-get install -y libfreetype6-dev
-sudo apt-get install -y libgnutls28-dev
-sudo apt-get install -y libmp3lame-dev
-sudo apt-get install -y libsdl2-dev
-sudo apt-get install -y libtool
-sudo apt-get install -y libva-dev
-sudo apt-get install -y libvdpau-dev
-sudo apt-get install -y libvorbis-dev
-sudo apt-get install -y libxcb1-dev
-sudo apt-get install -y libxcb-shm0-dev
-sudo apt-get install -y libxcb-xfixes0-dev
-sudo apt-get install -y meson
-sudo apt-get install -y ninja-build
-sudo apt-get install -y pkg-config
-sudo apt-get install -y texinfo
-sudo apt-get install -y wget
-sudo apt-get install -y yasm
-sudo apt-get install -y zlib1g-dev
-sudo apt -y install libchromaprint-tools
-sudo apt -y install frei0r-plugins-dev
-sudo apt -y install qttools5-dev qttools5-dev-tools
-sudo apt -y install libqt5svg5-dev
-sudo apt -y install ladspa-sdk git cmake
-sudo apt -y install libsndfile1-dev libsamplerate-ocaml-dev
-sudo apt -y install libjack-jackd2-dev
-sudo apt -y install libxml* freetype* fontconfig*
-sudo apt-get -y install libbluray-bdj libbluray-* libbluray-dev
-sudo apt -y install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev
-sudo apt -y install liblilv-0-0 liblilv-dev lilv-utils
-sudo apt -y install libiec61883-dev libraw1394-tools libraw1394-doc libraw1394-dev libraw1394-tools
-sudo apt -y install libavc1394-0 libavc1394-dev libavc1394-tools
-sudo apt -y install libbluray-dev libbluray-doc libbluray-bin
-sudo apt -y install libbs2b-dev libbs2b0
-sudo apt -y install libcaca-dev
-sudo apt -y install libdc1394-22-dev
-sudo apt -y install libgme-dev
-sudo apt -y install libgsm1-dev
-sudo apt -y install libmodplug-dev
-sudo apt -y install libmp3lame-dev
-sudo apt -y install libopencore-amrnb-dev
-sudo apt -y install libopencore-amrwb-dev
-sudo apt -y install libopenexr-dev
-sudo apt -y install libopenjp2-7-dev
-sudo apt -y install libopus-dev
-sudo apt -y install librtmp-dev
-sudo apt -y install librubberband-dev
-sudo apt -y install libsoxr-dev
-sudo apt -y install libspeex-dev
-sudo apt -y install libtheora-dev
-sudo apt -y install libtwolame-dev
-sudo apt -y install libvorbis-dev
-sudo apt -y install libvpx-dev
-sudo apt -y install libx264-dev
-sudo apt -y install libx265-dev
-sudo apt -y install libxvidcore-dev
-sudo apt -y install libzmq3-dev
-sudo apt -y install libzvbi-dev
-sudo apt -y install libzvbi0
-sudo apt -y install libxine2-dev
-sudo apt -y install flite1-dev libflite-dev
-sudo apt -y install libopenal-dev libopenal0
-sudo apt -y install libopenmpt-dev libopenmpt0
-sudo apt -y install libshine-dev libshine1
-sudo apt -y install libvidstab-dev
-sudo apt -y install libva-dev
-sudo apt -y install libva-drm-dev
-sudo apt -y install libva-x11-dev
-sudo apt -y install libvdpau-dev
-sudo apt -y install libvdpau-va-gl1
-sudo apt -y install libvmaf-dev
-sudo apt -y install libwebp-dev
-sudo apt -y install libsnappy-dev	
-sudo apt -y install libcdio-dev
-sudo apt -y install git-all cmake cmake-curses-gui build-essential gcc-arm-linux-gnueabi g++-arm-linux-gnueabi yasmapt install cdparanoia
-sudo apt -y install cdparanoia
-sudo apt-get install -y libcdio-utils
-sudo apt -y install libcdparanoia-dev libcdparanoia0
-sudo apt -y install libcdio-paranoia libcdio-paranoia-dev
-sudo apt -y install ffmpeg
-
-
-
-# Instalar NASM
-sudo apt-get -y install nasm 
-
-sudo apt -y install libx264-dev
-sudo apt -y install libx265-dev
-
-# Instalar openssl
-sudo apt -y install openssl libssl-dev
-
-sudo apt -y install libsvtav1-dev
-
-
-# Save existing php package list to packages.txt file
-sudo dpkg -l | grep php | tee packages.txt
-
-# Add Ondrej's repo source and signing key along with dependencies
-sudo apt -y install -y apt-transport-https ca-certificates gnupg2 software-properties-common lsb-release
-
-sudo curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
-sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
-
-sudo add-apt-repository -y ppa:ondrej/php <<EOF
-
-EOF
-
-sudo apt -y update
-## Remove old packages
-sudo apt -y remove --purge php*
-sudo apt -y purge php*
-sudo apt -y autoremove --purge
-
-# Instalar curl y wget
-sudo apt -y install -y curl wget
-
-
-
-
-#INSTALL FFMPEG SOLO SI ES INSTALL
-
-if [ "$ffmpeg" = "install" ]; then
-    echo "Instalando ffmpeg.."
-
-    # Install ffmpeg
-    rm -rf ~/ffmpeg_sources
-
-    # Crear directorios para el código fuente y los binarios
-    mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
-
-    # Clonar el repositorio de fdk-aac
-    git clone https://github.com/mstorsjo/fdk-aac && \
-    cd fdk-aac && \
-    autoreconf -fiv && \
-    ./configure --enable-shared && \
-    make -j$(nproc) && \
-    sudo make install && sudo ldconfig
-
-
-    # Compilar e instalar libx264
-    echo "instalar libx264"
-
-    cd ~/ffmpeg_sources && git -C x264 pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264 && PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --enable-pic && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-
-    # Compilar e instalar libx265
-    echo "instalar libx265"
-
-    cd ~/ffmpeg_sources && git -C x265_git pull 2> /dev/null || git clone https://bitbucket.org/multicoreware/x265_git && cd ~/ffmpeg_sources/x265_git/build/linux && cd ~/ffmpeg_sources/x265_git/build/linux/ && chmod 775 multilib.sh && ./multilib.sh
-
-    # Compilar e instalar libvpx
-    echo "instalar libvpx"
-
-    cd ~/ffmpeg_sources && git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && cd libvpx && PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libfdk-aac
-    echo "libfdk-aac"
-
-    cd ~/ffmpeg_sources && git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && cd fdk-aac && autoreconf -fiv && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libopus
-    echo "instalar libopus"
-
-    cd ~/ffmpeg_sources && git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git && cd opus && ./autogen.sh && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libaom
-    echo "instalar libaom"
-
-    cd ~/ffmpeg_sources && git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && mkdir -p aom_build && cd aom_build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_TESTS=OFF -DENABLE_NASM=on ../aom && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libsvtav1
-    echo "libsvtav1"
-
-    cd ~/ffmpeg_sources && git -C SVT-AV1 pull 2> /dev/null || git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git && mkdir -p SVT-AV1/build && cd SVT-AV1/build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libdav1d
-    echo "libdav1d"
-
-    cd ~/ffmpeg_sources && git -C dav1d pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/dav1d.git && mkdir -p dav1d/build && cd dav1d/build && meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "$HOME/ffmpeg_build" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
-
-    # Compilar e instalar libvmaf
-    echo "instalar libvmaf"
-    cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz && tar xvf v2.1.1.tar.gz && mkdir -p vmaf-2.1.1/libvmaf/build && cd vmaf-2.1.1/libvmaf/build && meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$HOME/ffmpeg_build" --bindir="$HOME/ffmpeg_build/bin" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
-
-
-    git clone --depth=1 https://gitlab.com/AOMediaCodec/SVT-AV1.git
-    cd SVT-AV1
-    cd Build
-    cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
-    make -j $(nproc)
-    sudo make install
-
-
-    # Compilar e instalar libx265
-    sudo apt-get install libnuma-dev && \
-    cd ~/ffmpeg_sources && \
-    git -C x265_git pull 2> /dev/null || git clone --depth 1 https://bitbucket.org/multicoreware/x265_git -b stable && \
-    cd x265_git/build/linux && \
-    PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED=off ../../source && \
-    PATH="$HOME/bin:$PATH"  make -j $(nproc) && \
-    make install
-
-
-    echo "clonamos ffmpeg"
-    cd ~/ffmpeg_sources
-    git clone https://github.com/FFmpeg/FFmpeg.git
-    mv FFmpeg ffmpeg
-    cd ffmpeg
-
-
-    # Corregir la versión de FFmpeg
-    touch VERSION
-
-    echo "7.0.git">RELEASE && cp VERSION VERSION.bak && echo -e "$(cat VERSION.bak) [$(date +%Y-%m-%d)] [$(cat RELEASE)] " > VERSION
-
-    echo "pasamos a compilar"
-
-    # Compilar e instalar FFmpeg
-    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
-    --prefix="$HOME/ffmpeg_build" \
-    --pkg-config-flags="--static" \
-    --extra-cflags="-I$HOME/ffmpeg_build/include" \
-    --extra-ldflags="-L$HOME/ffmpeg_build/lib" \
-    --extra-libs="-lpthread -lm" \
-    --ld="g++" \
-    --bindir="$HOME/bin" \
-    --enable-gpl \
-    --enable-openssl \
-    --enable-libaom \
-    --enable-libass \
-    --enable-libfdk-aac \
-    --enable-libfreetype \
-    --enable-libmp3lame \
-    --enable-libopus \
-    --enable-libsvtav1 \
-    --enable-libdav1d \
-    --enable-libvorbis \
-    --enable-libvpx \
-    --enable-libx264 \
-    --enable-libx265 \
-    --enable-nonfree \
-    --enable-libopenjpeg \
-    --enable-libpulse \
-    --enable-chromaprint \
-    --enable-frei0r \
-    --enable-libbluray \
-    --enable-libbs2b \
-    --enable-librubberband \
-    --enable-libspeex \
-    --enable-libtheora \
-    --enable-libfontconfig \
-    --enable-libfribidi \
-    --enable-libxml2 \
-    --enable-libxvid \
-    --enable-version3 \
-    --enable-libvidstab \
-    --enable-libcaca \
-    --enable-libopenmpt \
-    --enable-libgme \
-    --enable-opengl \
-    --enable-libsnappy \
-    --enable-libshine \
-    --enable-libtwolame \
-    --enable-libvo-amrwbenc \
-    --enable-libflite \
-    --enable-libsoxr \
-    --enable-ladspa \
-    && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install && hash -r
-
-
-    source ~/.profile
-
-
-    export PATH="$HOME/bin:$PATH"
-
-
-    echo "Instalación completada con éxito."
-
-    # final ffmpeg install
-
-fi
-
-
-# install opencv
-if [ "$opencv" = "install" ]; then
-    echo "Instalando opencv.."
-    # VERSION TO BE INSTALLED
-
-    OPENCV_VERSION='4.9.0'
-
-
-
-    # 3. INSTALL THE LIBRARY
-
-    sudo apt-get install -y unzip wget zip
-    wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
-    unzip ${OPENCV_VERSION}.zip
-    rm ${OPENCV_VERSION}.zip
-    mv opencv-${OPENCV_VERSION} OpenCV
-    cd OpenCV
-    mkdir build
-    cd build
-    cmake -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DBUILD_EXAMPLES=ON -DENABLE_PRECOMPILED_HEADERS=OFF ..
-    make -j$(nproc)
-    sudo make install
-    sudo ldconfig
-
-
-    # final opencv
-
-fi
-
-
-# Install tensorflow
-if [ "$TensorFlow" = "install" ]; then
-            echo "Instalando tensorflow.."
-
-        # Obtener la arquitectura de la CPU
-        ARCH=$(uname -m)
-
-        if [ "$ARCH" = "x86_64" ]; then
-        echo "**Instalando TensorFlow para x86_64**"
-
-        # Instalar Python 3 y pip
-        sudo apt update
-        sudo apt -y install -y python3 python3-pip python3-venv
-
-        # Instalar TensorFlow con soporte para GPU
-        python3 -m pip install tensorflow[and-cuda]
-
-        # Verificar la instalación de TensorFlow
-        python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
-        pip install tensorflow --break-system-packages
-        
-
-        elif [ "$ARCH" = "aarch64" ]; then
-        echo "**Instalando TensorFlow para aarch64**"
-
-        # Instalar Python 3 y pip
-        sudo apt update
-        sudo apt -y install -y python3 python3-pip python3-venv
-
-        # Crear un entorno virtual y activarlo
-        python3 -m venv tf_env
-        source tf_env/bin/activate
-
-        # Instalar TensorFlow optimizado para ARM
-        pip install tensorflow-cpu-aws
-
-        # Verificar la instalación de TensorFlow
-        python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('CPU'))"
-
-        else
-        echo "**Arquitectura de CPU no compatible: $ARCH**"
-        echo "Este script solo funciona en sistemas x86_64 o aarch64."
-        exit 1
-        fi
-
-        echo "**TensorFlow instalado correctamente para $ARCH**"
-
-        # Salir del entorno virtual (si se creó para aarch64)
-        if [ "$ARCH" = "aarch64" ]; then
-        deactivate
-        fi
-
-        # Final install tensorflow
-
-fi
-
-
-# Descargar la clave GPG para el repositorio de PHP
-sudo wget -qO /etc/apt/trusted.gpg.d/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
-
-# Agregar la clave de Zend
-curl -s https://repos.zend.com/zend.key | gpg --dearmor > /usr/share/keyrings/zend.gpg
-
-# Añadir el repositorio de PHP a la lista de fuentes de paquetes
-echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
-
-# Descargar la clave GPG para el repositorio de PHP de nuevo (parece repetitivo, puede ser necesario sólo una vez)
-sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
-
-# Añadir el repositorio de PHP a la lista de fuentes de paquetes de nuevo (también parece repetitivo, puede ser necesario sólo una vez)
-echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
-
-# Actualizar los paquetes
-sudo apt update && sudo apt upgrade -y
-
-# Instalar PHP y las extensiones necesarias
-
-sudo apt -y install -y php8.3-common 
-sudo apt -y install -y php8.3 
-sudo apt -y install -y php8.3-fpm 
-sudo apt -y install -y php8.3-mysql 
-sudo apt -y install -y php8.3-curl 
-sudo apt -y install -y php8.3-gd 
-sudo apt -y install -y php8.3-imagick 
-sudo apt -y install -y php8.3-intl 
-sudo apt -y install -y php8.3-mysql 
-sudo apt -y install -y php8.3-mbstring 
-sudo apt -y install -y php8.3-xml 
-sudo apt -y install -y php8.3-mcrypt 
-sudo apt -y install -y php-mcrypt
-sudo apt -y install -y php8.3-zip 
-sudo apt -y install -y php8.3-ldap 
-sudo apt -y install -y libapache2-mod-php8.3 
-sudo apt -y install -y php8.3-sybase 
-sudo apt -y install -y php8.3-opcache 
-sudo apt -y install -y php8.3-pgsql 
-sudo apt -y install -y php8.3-redis 
-sudo apt -y install -y php8.3-common 
-sudo apt -y install -y php8.3 
-sudo apt -y install -y php8.3-cli 
-sudo apt -y install -y php8.3-curl 
-sudo apt -y install -y php8.3-bz2 
-sudo apt -y install -y php8.3-xml 
-sudo apt -y install -y php8.3-mysql 
-sudo apt -y install -y php8.3-gd 
-sudo apt -y install -y php8.3-imagick 
-sudo apt -y install -y php-bz2 
-sudo apt -y install -y php8.3-mbstring 
-sudo apt -y install -y php8.3-intl 
-sudo apt -y install -y php8.3-opcache 
-sudo apt -y install -y php8.3-curl 
-sudo apt -y install -y php-curl 
-sudo apt -y install -y php-zip 
-sudo apt -y install -y php8.3-zip 
-sudo apt -y install -y php-ssh2 
-sudo apt -y install -y php8.3-ssh2 
-sudo apt -y install -y php-xmlrpc 
-sudo apt -y install -y php-xml 
-sudo apt -y install -y php-curl 
-sudo apt -y install -y php-mbstring 
-sudo apt -y install -y php8.3-fpm  
-sudo apt -y install -y php8.3-curl
-
-sudo systemctl restart php8.3-fpm 
-sudo systemctl enable php8.3-fpm
-
-
-sudo a2disconf php*-fpm
-# On Apache: Enable PHP 8.3 FPM
-sudo a2enconf php8.3-fpm
-
-sudo apt-get install php-pear
-sudo pecl channel-update pecl.php.net
-
-sudo systemctl restart php8.3-fpm && sudo systemctl enable php8.3-fpm
-
-
-sudo pear config-set php_bin /usr/bin/php8.3
-
-# Añadir la clave de Microsoft
-sudo curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-
-# Añadir los repositorios de Microsoft
-sudo pecl install sqlsrv
-sudo pecl install pdo_sqlsrv
-sudo pecl install pdo_mysql
-sudo pecl install pdo_pgsql
-sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
-
-sudo curl https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list
-sudo curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
-sudo curl https://packages.microsoft.com/config/debian/9/prod.list > /etc/apt/sources.list.d/mssql-release.list
-
-# Instalar las herramientas de Microsoft SQL
-sudo apt-get -y install msodbcsql17
-sudo apt-get -y install mssql-tools
-sudo apt-get -y install unixodbc-dev
-sudo apt-get -y install php-dev
-
-# Instalar las extensiones PHP para Microsoft SQL
-sudo pecl install pdo_sqlsrv
-sudo pecl install sqlsrv
-
-# Habilitar las extensiones PHP para Microsoft SQL
-echo "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.3/mods-available/sqlsrv.ini
-echo "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.3/mods-available/pdo_sqlsrv.ini
-sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
-
-sudo apt -y install gcc 
-sudo apt -y install -y g++ 
-sudo apt -y install -y make
-
-
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&\
-sudo apt-get install -y nodejs
-
-wget https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh
-bash install.sh
-source ~/.bashrc
-. ~/.bashrc
-nvm list-remote 
-
-nvm install v22
-nvm install node
-nvm use 22
-nvm alias default 22
-
-
-sudo apt -y install curl gnupg2 ca-certificates lsb-release debian-archive-keyring
-sudo apt -y install curl gnupg2 ca-certificates lsb-release ubuntu-keyring
+# 1. INSTALL THE NGINX
+ echo "Instalando Nginx..."
+    # Aquí va el código para instalar Nginx.
+sudo rm -rf /etc/apt/source.list.d/*nginx*
 curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
     | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
 
@@ -755,15 +166,9 @@ echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
 http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" \
     | sudo tee /etc/apt/sources.list.d/nginx3.list
 
-   echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
-    | sudo tee /etc/apt/preferences.d/99nginx
 echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
 http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" \
     | sudo tee /etc/apt/sources.list.d/nginx4.list
-
-echo -e "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
-    | sudo tee /etc/apt/preferences.d/99nginx
-
 
 curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
 | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
@@ -771,69 +176,24 @@ gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/sh
 echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
 http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
     | sudo tee /etc/apt/sources.list.d/nginx.list
+    
+# Crear una copia de seguridad del archivo sources.list
+cp /etc/apt/sources.list /etc/apt/sources.list.bak
 
-sudo apt -y update
+# Eliminar líneas duplicadas
+sed -i 'd/^\s*\#/g' /etc/apt/sources.list # Eliminar líneas de comentario
+sed -i 'd/\s*$/g' /etc/apt/sources.list # Eliminar líneas vacías
+sort /etc/apt/sources.list | uniq -d > /tmp/sources.list.uniq
 
+# Reemplazar el archivo sources.list con la versión depurada
+mv /tmp/sources.list.uniq /etc/apt/sources.list
 
-
-
-if [ "$WEB_SERVER" = "apache" ]; then
-    echo "Instalando Apache..."
-    # Aquí va el código para instalar Apache.
-	sudo systemctl stop nginx
-    sudo apt -y remove nginx
-	sudo apt -y install -y apache2
-	sudo a2enmod proxy_fcgi setenvif
-	sudo a2disconf php*
-	sudo a2dismod php*
-	sudo a2enconf php8.3-fpm
-	sudo systemctl enable php8.3-fpm
-	sudo systemctl reload apache2
-	sudo service apache2 restart
-	sudo service php8.3-fpm restart
-	
-	# Define el nombre del archivo de configuración
-	echo 'anadir nueva configuracion apache'
-APACHE_CONFIG_FILE="/etc/apache2/sites-available/000-default.conf"
-mv ${APACHE_CONFIG_FILE} ${APACHE_CONFIG_FILE}.back
-
-# Escribe la configuración en el archivo
-echo "<VirtualHost *:80>
-    ServerAdmin webmaster@localhost
-    DocumentRoot /var/www/html/public
-
-    <Directory /var/www/html/mi-sitio/public>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>" | sudo tee ${APACHE_CONFIG_FILE}
-
-# Reinicia el servidor Apache para que los cambios surtan efecto
-sudo service apache2 restart
-
-sudo chmod -R 777 /var/www/html
+# Actualizar la caché de paquetes
+sudo apt update
 
 	
-elif [ "$WEB_SERVER" = "nginx" ]; then
-    echo "Instalando Nginx..."
-    # Aquí va el código para instalar Nginx.
-	sudo a2enmod proxy_fcgi setenvif
-	sudo a2disconf php*
-	sudo a2dismod php*
-    sudo a2enconf php8.3-fpm
-	sudo systemctl enable php8.3-fpm
-	sudo systemctl stop apache2
-	sudo service apache2 stop
-	sudo service php8.2-fpm restart
-
-	sudo apt -y purge apache2 apache2-utils
-	sudo apt -y remove apache2 apache2-utils
-	sudo apt -y autoremove apache2 apache2-utils
-
+sudo apt -y purge apache
+sudo apt -y purge apache2
 	sudo apt list nginx
 	sudo apt -y install nginx=1.24*
 	sudo apt -y install nginx-extras
@@ -1160,17 +520,10 @@ sudo ufw allow 8081
 
 echo 'config con exito'
 
-# Iniciar y habilitar PHP-FPM
-systemctl start php8.3-fpm
-systemctl enable php8.3-fpm
-
 # Reiniciar Nginx
 systemctl restart nginx && systemctl enable nginx
 
-else
-    echo "Por favor especifica 'apache' o 'nginx' como argumento al ejecutar este script. Ejemplo: sh install.sh apache o sh install.sh nginx"
-    exit 1
-fi
+
 
 #Composer Install
 sudo apt -y install -y curl php-cli php-mbstring git unzip
@@ -1185,6 +538,359 @@ sudo apt -y install -y nodejs npm
 
 
 
+# 2. INSTALL THE DEPENDENCIES
+
+# Build tools:
+sudo apt-get install -y build-essential
+sudo apt-get install -y cmake
+
+# GUI (if you want to use GTK instead of Qt, replace 'qt5-default' with 'libgtkglext1-dev' and remove '-DWITH_QT=ON' option in CMake):
+sudo apt-get install -y qt5-default
+sudo apt-get install -y libvtk6-dev
+
+# Media I/O:
+sudo apt-get install -y zlib1g-dev
+sudo apt-get install -y libjpeg-dev
+sudo apt-get install -y libwebp-dev
+sudo apt-get install -y libpng-dev
+sudo apt-get install -y libtiff5-dev
+sudo apt-get install -y libjasper-dev
+sudo apt-get install -y libopenexr-dev
+sudo apt-get install -y libgdal-dev
+
+
+# Video I/O:
+sudo apt-get install -y libdc1394-22-dev
+sudo apt-get install -y libavcodec-dev
+sudo apt-get install -y libavformat-dev
+sudo apt-get install -y libswscale-dev
+sudo apt-get install -y libtheora-dev
+sudo apt-get install -y libvorbis-dev
+sudo apt-get install -y libxvidcore-dev
+sudo apt-get install -y libx264-dev
+sudo apt-get install -y yasm
+sudo apt-get install -y libopencore-amrnb-dev
+sudo apt-get install -y libopencore-amrwb-dev
+sudo apt-get install -y libv4l-dev
+sudo apt-get install -y libxine2-dev
+
+
+# Parallelism and linear algebra libraries:
+sudo apt-get install -y libtbb-dev
+sudo apt-get install -y libeigen3-dev
+
+# Python:
+sudo apt-get install -y python-dev
+sudo apt-get install -y python-tk
+sudo apt-get install -y python-numpy
+sudo apt-get install -y python3-dev
+sudo apt-get install -y python3-tk
+sudo apt-get install -y python3-numpy
+
+# Java:
+sudo apt-get install -y ant default-jdk
+
+# Documentation:
+sudo apt-get install -y doxygen
+
+#WHOIS
+sudo apt -y install whois
+
+#Necesarios OpenCV
+sudo apt -y  install build-essential 
+sudo apt -y  cmake pkg-config 
+sudo apt -y  libjpeg-dev 
+sudo apt -y  libpng-dev 
+sudo apt -y  libtiff-dev 
+sudo apt -y  libjasper-dev 
+sudo apt -y  libavcodec-dev 
+sudo apt -y  libavformat-dev 
+sudo apt -y  libswscale-dev 
+sudo apt -y  libgstreamer1.0-dev 
+sudo apt -y  libgstreamer-plugins-base1.0-dev 
+sudo apt -y  libv4l2-dev 
+sudo apt -y  python3-dev 
+sudo apt -y  python3-numpy
+
+sudo apt -y install libopencv-dev python3-opencv
+python3 -c "import cv2; print(cv2.__version__)"
+
+apt -y install graphicsmagick-imagemagick-compat
+apt -y install imagemagick
+# Instalar dependencias
+sudo apt-get install -y autoconf
+sudo apt-get install -y build-essential
+sudo apt-get install -y libass-dev
+sudo apt-get install -y libdav1d-dev
+sudo apt-get install -y libmp3lame-dev
+sudo apt-get install -y yasm
+sudo apt-get install -y libopus-dev
+sudo apt-get install -y openssl
+sudo apt-get install -y libssl-dev
+
+# Obtener otras dependencias
+sudo apt-get install -y autoconf
+sudo apt-get install -y automake
+sudo apt-get install -y build-essential
+sudo apt-get install -y cmake
+sudo apt-get install -y git
+sudo apt-get install -y libass-dev
+sudo apt-get install -y libfreetype6-dev
+sudo apt-get install -y libgnutls28-dev
+sudo apt-get install -y libmp3lame-dev
+sudo apt-get install -y libsdl2-dev
+sudo apt-get install -y libtool
+sudo apt-get install -y libva-dev
+sudo apt-get install -y libvdpau-dev
+sudo apt-get install -y libvorbis-dev
+sudo apt-get install -y libxcb1-dev
+sudo apt-get install -y libxcb-shm0-dev
+sudo apt-get install -y libxcb-xfixes0-dev
+sudo apt-get install -y meson
+sudo apt-get install -y ninja-build
+sudo apt-get install -y pkg-config
+sudo apt-get install -y texinfo
+sudo apt-get install -y wget
+sudo apt-get install -y yasm
+sudo apt-get install -y zlib1g-dev
+sudo apt -y install libchromaprint-tools
+sudo apt -y install frei0r-plugins-dev
+sudo apt -y install qttools5-dev qttools5-dev-tools
+sudo apt -y install libqt5svg5-dev
+sudo apt -y install ladspa-sdk git cmake
+sudo apt -y install libsndfile1-dev libsamplerate-ocaml-dev
+sudo apt -y install libjack-jackd2-dev
+sudo apt -y install libxml* freetype* fontconfig*
+sudo apt-get -y install libbluray-bdj libbluray-* libbluray-dev
+sudo apt -y install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavresample-dev
+sudo apt -y install liblilv-0-0 liblilv-dev lilv-utils
+sudo apt -y install libiec61883-dev libraw1394-tools libraw1394-doc libraw1394-dev libraw1394-tools
+sudo apt -y install libavc1394-0 libavc1394-dev libavc1394-tools
+sudo apt -y install libbluray-dev libbluray-doc libbluray-bin
+sudo apt -y install libbs2b-dev libbs2b0
+sudo apt -y install libcaca-dev
+sudo apt -y install libdc1394-22-dev
+sudo apt -y install libgme-dev
+sudo apt -y install libgsm1-dev
+sudo apt -y install libmodplug-dev
+sudo apt -y install libmp3lame-dev
+sudo apt -y install libopencore-amrnb-dev
+sudo apt -y install libopencore-amrwb-dev
+sudo apt -y install libopenexr-dev
+sudo apt -y install libopenjp2-7-dev
+sudo apt -y install libopus-dev
+sudo apt -y install librtmp-dev
+sudo apt -y install librubberband-dev
+sudo apt -y install libsoxr-dev
+sudo apt -y install libspeex-dev
+sudo apt -y install libtheora-dev
+sudo apt -y install libtwolame-dev
+sudo apt -y install libvorbis-dev
+sudo apt -y install libvpx-dev
+sudo apt -y install libx264-dev
+sudo apt -y install libx265-dev
+sudo apt -y install libxvidcore-dev
+sudo apt -y install libzmq3-dev
+sudo apt -y install libzvbi-dev
+sudo apt -y install libzvbi0
+sudo apt -y install libxine2-dev
+sudo apt -y install flite1-dev libflite-dev
+sudo apt -y install libopenal-dev libopenal0
+sudo apt -y install libopenmpt-dev libopenmpt0
+sudo apt -y install libshine-dev libshine1
+sudo apt -y install libvidstab-dev
+sudo apt -y install libva-dev
+sudo apt -y install libva-drm-dev
+sudo apt -y install libva-x11-dev
+sudo apt -y install libvdpau-dev
+sudo apt -y install libvdpau-va-gl1
+sudo apt -y install libvmaf-dev
+sudo apt -y install libwebp-dev
+sudo apt -y install libsnappy-dev	
+sudo apt -y install libcdio-dev
+sudo apt -y install git-all cmake cmake-curses-gui build-essential gcc-arm-linux-gnueabi g++-arm-linux-gnueabi yasmapt install cdparanoia
+sudo apt -y install cdparanoia
+sudo apt-get install -y libcdio-utils
+sudo apt -y install libcdparanoia-dev libcdparanoia0
+sudo apt -y install libcdio-paranoia libcdio-paranoia-dev
+sudo apt -y install ffmpeg
+
+
+
+# Instalar NASM
+sudo apt-get -y install nasm 
+
+sudo apt -y install libx264-dev
+sudo apt -y install libx265-dev
+
+# Instalar openssl
+sudo apt -y install openssl libssl-dev
+
+sudo apt -y install libsvtav1-dev
+
+
+# Save existing php package list to packages.txt file
+sudo dpkg -l | grep php | tee packages.txt
+
+# Add Ondrej's repo source and signing key along with dependencies
+sudo apt -y install -y apt-transport-https ca-certificates gnupg2 software-properties-common lsb-release
+
+sudo curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
+sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+
+sudo add-apt-repository -y ppa:ondrej/php <<EOF
+
+EOF
+
+
+## Remove old packages
+sudo apt -y remove --purge php*
+sudo apt -y purge php*
+sudo apt -y autoremove --purge
+
+# Instalar curl y wget
+sudo apt -y install -y curl wget
+
+
+# Descargar la clave GPG para el repositorio de PHP
+sudo wget -qO /etc/apt/trusted.gpg.d/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
+
+# Agregar la clave de Zend
+curl -s https://repos.zend.com/zend.key | gpg --dearmor > /usr/share/keyrings/zend.gpg
+
+# Añadir el repositorio de PHP a la lista de fuentes de paquetes
+echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
+
+# Descargar la clave GPG para el repositorio de PHP de nuevo (parece repetitivo, puede ser necesario sólo una vez)
+sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+
+# Añadir el repositorio de PHP a la lista de fuentes de paquetes de nuevo (también parece repetitivo, puede ser necesario sólo una vez)
+echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
+
+# Crear una copia de seguridad del archivo sources.list
+cp /etc/apt/sources.list /etc/apt/sources.list.bak
+
+# Eliminar líneas duplicadas
+sed -i 'd/^\s*\#/g' /etc/apt/sources.list # Eliminar líneas de comentario
+sed -i 'd/\s*$/g' /etc/apt/sources.list # Eliminar líneas vacías
+sort /etc/apt/sources.list | uniq -d > /tmp/sources.list.uniq
+
+# Reemplazar el archivo sources.list con la versión depurada
+mv /tmp/sources.list.uniq /etc/apt/sources.list
+
+# Actualizar los paquetes
+sudo apt-get -y update
+sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
+# sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
+sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
+systemctl daemon-reload
+
+# Instalar PHP y las extensiones necesarias
+sudo apt -y install php8.3-phar 
+sudo apt -y install php8.3-common 
+sudo apt -y install php8.3 
+sudo apt -y install php8.3-fpm 
+sudo apt -y install php8.3-mysql 
+sudo apt -y install php8.3-curl 
+sudo apt -y install php8.3-gd 
+sudo apt -y install php8.3-imagick 
+sudo apt -y install php8.3-intl 
+sudo apt -y install php8.3-mysql 
+sudo apt -y install php8.3-mbstring 
+sudo apt -y install php8.3-xml 
+sudo apt -y install php8.3-mcrypt 
+sudo apt -y install php-mcrypt
+sudo apt -y install php8.3-zip 
+sudo apt -y install php8.3-ldap
+sudo apt -y install php8.3-sybase 
+sudo apt -y install php8.3-opcache 
+sudo apt -y install php8.3-pgsql 
+sudo apt -y install php8.3-redis 
+sudo apt -y install php8.3-common 
+sudo apt -y install php8.3 
+sudo apt -y install php8.3-cli 
+sudo apt -y install php8.3-curl 
+sudo apt -y install php8.3-bz2 
+sudo apt -y install php8.3-xml 
+sudo apt -y install php8.3-mysql 
+sudo apt -y install php8.3-gd 
+sudo apt -y install php8.3-imagick 
+sudo apt -y install php-bz2 
+sudo apt -y install php8.3-mbstring 
+sudo apt -y install php8.3-intl 
+sudo apt -y install php8.3-opcache 
+sudo apt -y install php8.3-curl 
+sudo apt -y install php-curl 
+sudo apt -y install php-zip 
+sudo apt -y install php8.3-zip 
+sudo apt -y install php-ssh2 
+sudo apt -y install php8.3-ssh2 
+sudo apt -y install php-xmlrpc 
+sudo apt -y install php-xml 
+sudo apt -y install php-curl 
+sudo apt -y install php-mbstring 
+sudo apt -y install php8.3-fpm  
+sudo apt -y install php8.3-curl
+
+sudo systemctl restart php8.3-fpm 
+sudo systemctl enable php8.3-fpm
+
+
+sudo a2disconf php*-fpm
+# On Apache: Enable PHP 8.3 FPM
+sudo a2enconf php8.3-fpm
+
+sudo apt-get install php-pear
+sudo apt-get install php8.3-pear
+sudo pecl channel-update pecl.php.net
+
+sudo systemctl restart php8.3-fpm && sudo systemctl enable php8.3-fpm
+
+
+sudo pear config-set php_bin /usr/bin/php8.3
+
+# Añadir la clave de Microsoft
+sudo curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+
+# Añadir los repositorios de Microsoft
+sudo pecl install sqlsrv
+sudo pecl install pdo_sqlsrv
+sudo pecl install pdo_mysql
+sudo pecl install pdo_pgsql
+sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
+
+sudo curl https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list
+sudo curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
+sudo curl https://packages.microsoft.com/config/debian/9/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+# Instalar las herramientas de Microsoft SQL
+sudo apt-get -y install msodbcsql17
+sudo apt-get -y install mssql-tools
+sudo apt-get -y install unixodbc-dev
+sudo apt-get -y install php-dev
+
+# Instalar las extensiones PHP para Microsoft SQL
+sudo pecl install pdo_sqlsrv
+sudo pecl install sqlsrv
+
+# Habilitar las extensiones PHP para Microsoft SQL
+echo "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.3/mods-available/sqlsrv.ini
+echo "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.3/mods-available/pdo_sqlsrv.ini
+sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
+
+sudo apt -y install gcc 
+sudo apt -y install -y g++ 
+sudo apt -y install -y make
+
+sudo apt -y install curl gnupg2 ca-certificates lsb-release debian-archive-keyring
+sudo apt -y install curl gnupg2 ca-certificates lsb-release ubuntu-keyring
+#Esta nueva version anade estos dos parametros directamente en la instalcion por ser repo de microsoft
+#echo "extension=sqlsrv" | sudo tee -a /etc/php/8.3/cli/php.ini
+#echo "extension=pdo_sqlsrv" | sudo tee -a /etc/php/8.3/cli/php.ini
+
+
+# Reiniciar Nginx
+systemctl restart nginx
 # Añade las líneas al archivo www.conf
 echo "pm.max_children = 250" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
 echo "pm.max_requests = 500" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
@@ -1203,11 +909,6 @@ echo "upload_max_filesize=20000M" | sudo tee -a /etc/php/8.3/cli/php.ini
 echo "max_execution_time=180000" | sudo tee -a /etc/php/8.3/cli/php.ini
 echo "max_input_time=12000" | sudo tee -a /etc/php/8.3/cli/php.ini
 
-
-#Esta nueva version anade estos dos parametros directamente en la instalcion por ser repo de microsoft
-#echo "extension=sqlsrv" | sudo tee -a /etc/php/8.3/cli/php.ini
-#echo "extension=pdo_sqlsrv" | sudo tee -a /etc/php/8.3/cli/php.ini
-
 #anadir zend para mejor velocidad en web server
 echo "[opcache]" | sudo tee -a /etc/php/8.3/cli/php.ini
 echo "zend_extension=opcache.so" | sudo tee -a /etc/php/8.3/cli/php.ini
@@ -1220,8 +921,280 @@ echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.3/cli/php.ini
 
 # Reinicia el servicio php8.3-fpm y apache
 sudo service php8.3-fpm restart
-sudo service apache2 restart
 sudo systemctl restart nginx
+
+
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs
+
+# Descargar e instalar NVM
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+
+# Recargar la configuración de Bash
+source ~/.bashrc
+
+nvm list-remote 
+# Instalar la versión LTS más reciente de Node.js
+nvm install --lts # pones 22 si quieres instalar 22 en lugar de --lts versión LTS más reciente
+
+nvm use 'lts/*' # pones 22 si quieres instalar 22 en lugar de --lts：
+# Establecer la versión LTS recién instalada como la predeterminada
+nvm alias default 'lts/*'
+
+
+
+#INSTALL FFMPEG SOLO SI ES INSTALL
+
+if [ "$ffmpeg" = "install" ]; then
+    echo "Instalando ffmpeg.."
+
+    # Install ffmpeg
+    rm -rf ~/ffmpeg_sources
+
+    # Crear directorios para el código fuente y los binarios
+    mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
+
+    # Clonar el repositorio de fdk-aac
+    git clone https://github.com/mstorsjo/fdk-aac && \
+    cd fdk-aac && \
+    autoreconf -fiv && \
+    ./configure --enable-shared && \
+    make -j$(nproc) && \
+    sudo make install && sudo ldconfig
+
+
+    # Compilar e instalar libx264
+    echo "instalar libx264"
+
+    cd ~/ffmpeg_sources && git -C x264 pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264 && PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --enable-pic && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+
+    # Compilar e instalar libx265
+    echo "instalar libx265"
+
+    cd ~/ffmpeg_sources && git -C x265_git pull 2> /dev/null || git clone https://bitbucket.org/multicoreware/x265_git && cd ~/ffmpeg_sources/x265_git/build/linux && cd ~/ffmpeg_sources/x265_git/build/linux/ && chmod 775 multilib.sh && ./multilib.sh
+
+    # Compilar e instalar libvpx
+    echo "instalar libvpx"
+
+    cd ~/ffmpeg_sources && git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && cd libvpx && PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libfdk-aac
+    echo "libfdk-aac"
+
+    cd ~/ffmpeg_sources && git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && cd fdk-aac && autoreconf -fiv && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libopus
+    echo "instalar libopus"
+
+    cd ~/ffmpeg_sources && git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git && cd opus && ./autogen.sh && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libaom
+    echo "instalar libaom"
+
+    cd ~/ffmpeg_sources && git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && mkdir -p aom_build && cd aom_build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_TESTS=OFF -DENABLE_NASM=on ../aom && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libsvtav1
+    echo "libsvtav1"
+
+    cd ~/ffmpeg_sources && git -C SVT-AV1 pull 2> /dev/null || git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git && mkdir -p SVT-AV1/build && cd SVT-AV1/build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
+
+    # Compilar e instalar libdav1d
+    echo "libdav1d"
+
+    cd ~/ffmpeg_sources && git -C dav1d pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/dav1d.git && mkdir -p dav1d/build && cd dav1d/build && meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "$HOME/ffmpeg_build" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
+
+    # Compilar e instalar libvmaf
+    echo "instalar libvmaf"
+    cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz && tar xvf v2.1.1.tar.gz && mkdir -p vmaf-2.1.1/libvmaf/build && cd vmaf-2.1.1/libvmaf/build && meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$HOME/ffmpeg_build" --bindir="$HOME/ffmpeg_build/bin" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
+
+
+    git clone --depth=1 https://gitlab.com/AOMediaCodec/SVT-AV1.git
+    cd SVT-AV1
+    cd Build
+    cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+    make -j $(nproc)
+    sudo make install
+
+
+    # Compilar e instalar libx265
+    sudo apt-get install libnuma-dev && \
+    cd ~/ffmpeg_sources && \
+    git -C x265_git pull 2> /dev/null || git clone --depth 1 https://bitbucket.org/multicoreware/x265_git -b stable && \
+    cd x265_git/build/linux && \
+    PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED=off ../../source && \
+    PATH="$HOME/bin:$PATH"  make -j $(nproc) && \
+    make install
+
+
+    echo "clonamos ffmpeg"
+    cd ~/ffmpeg_sources
+    git clone https://github.com/FFmpeg/FFmpeg.git
+    mv FFmpeg ffmpeg
+    cd ffmpeg
+
+
+    # Corregir la versión de FFmpeg
+    touch VERSION
+
+    echo "7.0.git">RELEASE && cp VERSION VERSION.bak && echo -e "$(cat VERSION.bak) [$(date +%Y-%m-%d)] [$(cat RELEASE)] " > VERSION
+
+    echo "pasamos a compilar"
+
+    # Compilar e instalar FFmpeg
+    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
+    --prefix="$HOME/ffmpeg_build" \
+    --pkg-config-flags="--static" \
+    --extra-cflags="-I$HOME/ffmpeg_build/include" \
+    --extra-ldflags="-L$HOME/ffmpeg_build/lib" \
+    --extra-libs="-lpthread -lm" \
+    --ld="g++" \
+    --bindir="$HOME/bin" \
+    --enable-gpl \
+    --enable-openssl \
+    --enable-libaom \
+    --enable-libass \
+    --enable-libfdk-aac \
+    --enable-libfreetype \
+    --enable-libmp3lame \
+    --enable-libopus \
+    --enable-libsvtav1 \
+    --enable-libdav1d \
+    --enable-libvorbis \
+    --enable-libvpx \
+    --enable-libx264 \
+    --enable-libx265 \
+    --enable-nonfree \
+    --enable-libopenjpeg \
+    --enable-libpulse \
+    --enable-chromaprint \
+    --enable-frei0r \
+    --enable-libbluray \
+    --enable-libbs2b \
+    --enable-librubberband \
+    --enable-libspeex \
+    --enable-libtheora \
+    --enable-libfontconfig \
+    --enable-libfribidi \
+    --enable-libxml2 \
+    --enable-libxvid \
+    --enable-version3 \
+    --enable-libvidstab \
+    --enable-libcaca \
+    --enable-libopenmpt \
+    --enable-libgme \
+    --enable-opengl \
+    --enable-libsnappy \
+    --enable-libshine \
+    --enable-libtwolame \
+    --enable-libvo-amrwbenc \
+    --enable-libflite \
+    --enable-libsoxr \
+    --enable-ladspa \
+    && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install && hash -r
+
+
+    source ~/.profile
+
+
+    export PATH="$HOME/bin:$PATH"
+
+
+    echo "Instalación completada con éxito."
+
+    # final ffmpeg install
+
+fi
+
+
+# install opencv
+if [ "$opencv" = "install" ]; then
+    echo "Instalando opencv.."
+    # VERSION TO BE INSTALLED
+
+    OPENCV_VERSION='4.9.0'
+
+
+
+    # 3. INSTALL THE LIBRARY
+
+    sudo apt-get install -y unzip wget zip
+    wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
+    unzip ${OPENCV_VERSION}.zip
+    rm ${OPENCV_VERSION}.zip
+    mv opencv-${OPENCV_VERSION} OpenCV
+    cd OpenCV
+    mkdir build
+    cd build
+    cmake -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DBUILD_EXAMPLES=ON -DENABLE_PRECOMPILED_HEADERS=OFF ..
+    make -j$(nproc)
+    sudo make install
+    sudo ldconfig
+
+
+    # final opencv
+
+fi
+
+
+# Install tensorflow
+if [ "$TensorFlow" = "install" ]; then
+            echo "Instalando tensorflow.."
+
+        # Obtener la arquitectura de la CPU
+        ARCH=$(uname -m)
+
+        if [ "$ARCH" = "x86_64" ]; then
+        echo "**Instalando TensorFlow para x86_64**"
+
+        # Instalar Python 3 y pip
+        sudo apt update
+        sudo apt -y install -y python3 python3-pip python3-venv
+
+        # Instalar TensorFlow con soporte para GPU
+        python3 -m pip install tensorflow[and-cuda]
+
+        # Verificar la instalación de TensorFlow
+        python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
+        pip install tensorflow --break-system-packages
+        
+
+        elif [ "$ARCH" = "aarch64" ]; then
+        echo "**Instalando TensorFlow para aarch64**"
+
+        # Instalar Python 3 y pip
+        sudo apt update
+        sudo apt -y install -y python3 python3-pip python3-venv
+
+        # Crear un entorno virtual y activarlo
+        python3 -m venv tf_env
+        source tf_env/bin/activate
+
+        # Instalar TensorFlow optimizado para ARM
+        pip install tensorflow-cpu-aws
+
+        # Verificar la instalación de TensorFlow
+        python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('CPU'))"
+
+        else
+        echo "**Arquitectura de CPU no compatible: $ARCH**"
+        echo "Este script solo funciona en sistemas x86_64 o aarch64."
+        exit 1
+        fi
+
+        echo "**TensorFlow instalado correctamente para $ARCH**"
+
+        # Salir del entorno virtual (si se creó para aarch64)
+        if [ "$ARCH" = "aarch64" ]; then
+        deactivate
+        fi
+
+        # Final install tensorflow
+
+fi
+
+
+
 
 
 echo 'Pasamos a Mariadb'
@@ -1378,14 +1351,27 @@ fi
 #redis
 sudo apt -y install redis-server
 sudo systemctl enable --now redis-server.service
-
+echo "Redis Instalado, paro a la config"
+echo "Instalando appnetd_cloud y limpiar antes de empezar"
 cd /var/www/ || exit
-	rm -rf *
-	rm -rf .*
+echo "he pasado a carpeta /var/www"
+echo "limpiando carpeta html" 
+#Comprobar si el directorio existe
+if [ -d "/var/www/html/" ]; then
+    # Si el directorio existe, cambiar a él y eliminar su contenido
+    cd /var/www/|| exit
+    rm -rf html/*
+else
+    # Si el directorio no existe, salir del script
+    echo "El directorio /var/www/html/ no existe."
 
+fi
+echo "he limpiado carpeta html"
+echo "instalor ftp"
 #Installar servidor ftp
 if [ "$FTP" = "install" ]; then
 	    # Función para generar una contraseña segura
+        echo "Función para generar una contraseña segura"
 	generate_FTP_PASSWORD() {
 	  openssl rand -base64 32 | tr -dc 'a-zA-Z0-9-_!@#$%^&*()+=\[\]{};:'"<>,./?\\|\~" | head -c 16
 	}
@@ -1394,10 +1380,14 @@ if [ "$FTP" = "install" ]; then
 	FTP_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
 	FTP_PASSWORD=$(generate_FTP_PASSWORD)
 	FTP_DIR=/var/www/ftp
-	
+    echo "FTP_USER: $FTP_USER"
+    echo "FTP_PASSWORD: $FTP_PASSWORD"
+    echo "FTP_DIR: $FTP_DIR"
+    echo "FTP_USER: $FTP_USER"
+    echo "FTP_PASSWORD: $FTP_PASSWORD"
 	# Actualizar e instalar paquetes necesarios
 	sudo apt -y install -y proftpd
-	
+	echo "Configuro config ftp"
 	# Configurar ProFTPD
 	cp /etc/proftpd/proftpd.conf /etc/proftpd/proftpd.conf.backup
     sed -i 's/^DefaultRoot .*/DefaultRoot ~/g' /etc/proftpd/proftpd.conf
@@ -1408,13 +1398,12 @@ if [ "$FTP" = "install" ]; then
     sed -i 's/^# PassivePorts.*/PassivePorts 50000 50010/g' /etc/proftpd/proftpd.conf
 
 	
-	
-	    # Verificar si el directorio existe
-	if [ ! -d "$FTP_DIR" ]; then
+	echo "paso a directorio y usuario"
+
 	    # Crear el directorio FTP si no existe
 	    sudo mkdir -p "$FTP_DIR"
 	    echo "Directorio $FTP_DIR creado."
-	fi
+
 	    # Crear el usuario sin crear el directorio de inicio si ya existe
 	    sudo useradd -M -d $FTP_DIR -s /bin/bash $FTP_USER
 	    # Establecer la contraseña del usuario utilizando chpasswd
@@ -1423,9 +1412,11 @@ if [ "$FTP" = "install" ]; then
 	    sudo usermod -aG $(stat -c '%G' $FTP_DIR) $FTP_USER
 	    # Otorgar permisos de lectura, escritura y ejecución al directorio y a todos los archivos dentro de él
 	    sudo chmod -R 777 $FTP_DIR
-	
+	echo "FTP instalado lo reiniciare"
 	# Reiniciar ProFTPD
 	sudo systemctl restart proftpd
+
+    echo "He terminado con FTP"
 fi
 
 
@@ -1434,6 +1425,7 @@ fi
 
 
 # descargar de git
+echo "Instalando appnetd_cloud si no es none"
 
 if [ "$INSTALL" = "none" ]; then
     echo 'Sin Instalar appnetd_cloud '
@@ -1452,7 +1444,7 @@ elif [ "$INSTALL" != "" ]; then
 	cd /var/www/html/ || exit
 	
 	echo 'clonar proyecto desde git'
-	git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Gestion-v3.1.git /var/www/html > /var/www/log.txt
+		git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Gestion-v3.1.git /var/www/html > /var/www/log.txt 2>&1
 	echo 'instalar .env'
 	cp .env.example .env
 	# Ruta del archivo .env
@@ -1463,28 +1455,7 @@ elif [ "$INSTALL" != "" ]; then
 	sed -i "s/^\(DB_USERNAME=\).*/\1${NEW_USERNAME}/" "$ENV_FILE"
 	sed -i "s/^\(DB_PASSWORD=\).*/\1${NEW_PASSWORD}/" "$ENV_FILE"
  
-	 if [ "$FTP" = "install" ]; then
-	    	sed -i "s/^\(FTP_HOST=\).*/\1localhost/" "$ENV_FILE"
-		sed -i "s/^\(FTP_PORT=\).*/\121/" "$ENV_FILE"
-		sed -i "s/^\(FTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
-  		sed -i "s/^\(FTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
-		sed -i "s/^\(FTP_ROOT=\).*/\1\//" "$ENV_FILE"
-		sed -i "s/^\(FTP_PASSIVE=\).*/\1false/" "$ENV_FILE"
-	fi
- 	
-	# Verificar si el valor de FTP no está vacío y no es "none"
-	if [ "$FTP" != "" ] && [ "$FTP" != "none" ]; then
-	    # Dividir el valor de FTP en partes
-	    IFS=':@/' read -r FTP_USER FTP_PASSWORD FTP_HOST FTP_PORT FTP_PATH <<< "$FTP"
-	
-	    # Actualizar las variables en el archivo de entorno
-	    sed -i "s/^\(FTP_HOST=\).*/\1$FTP_HOST/" "$ENV_FILE"
-	    sed -i "s/^\(FTP_PORT=\).*/\1$FTP_PORT/" "$ENV_FILE"
-	    sed -i "s/^\(FTP_USERNAME=\).*/\1$FTP_USER/" "$ENV_FILE"
-	    sed -i "s/^\(FTP_PASSWORD=\).*/\1$FTP_PASSWORD/" "$ENV_FILE"
-	    sed -i "s/^\(FTP_ROOT=\).*/\1$FTP_PATH/" "$ENV_FILE"
-	    sed -i "s/^\(FTP_PASSIVE=\).*/\1false/" "$ENV_FILE"
-	fi
+
  
 
  	
@@ -1508,7 +1479,7 @@ elif [ "$INSTALL" != "" ]; then
 	echo 'dar permiso composer root y instalar y actualizar'
 	export COMPOSER_ALLOW_SUPERUSER=1
 	/usr/local/bin/composer update
-urbinpm run build
+	/usr/bin/npm run build
 	echo 'dar los permisos necesario'
  	sudo rm -rf /var/www/html/public/storage
   	sudo php artisan storage:link
@@ -1521,29 +1492,27 @@ urbinpm run build
 	sudo chmod 777 /var/www/html/storage/framework/views
 
 	sudo rm -rf .git
-else
-    echo "Por favor especifica none o install en instalacion "
-    exit 1
 fi
 
-sudo chown -R :apache /var/www/html
 sudo chown -R :nginx /var/www/html
 sudo chown -R :www-data /var/www/html
 sudo chmod -R g+rwx /var/www/html
-sudo chown -R :apache /var/www/html
 sudo chown -R :nginx /var/www/html
 sudo chmod -R g+rwx /var/www/html
 
+
 if [ "$VPN" = "none" ]; then
     echo 'Sin VPN P2P Zerotier, Sin abrir Puertos '
+    IP=localhost
 elif [ "$VPN" != "" ]; then
     echo 'Installar VPN Zerotier'
-	curl -s https://install.zerotier.com | sudo bash
+	rm /etc/apt/sources.list.d/zerotier* 
+    sudo pt remove --yes zerotier-one
+    sudo curl -s https://install.zerotier.com | sudo bash
 	sudo zerotier-cli join "$VPN"
 	sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'
-else
-    echo "Por favor especifica none o EL ID RED en instalacion "
-    exit 1
+    IP=$(sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+    echo "IP ZEROTIER: $IP"
 fi
 
 
@@ -1561,7 +1530,11 @@ else
     exit 1
 fi
 
-echo "Contraseña FTP : $FTP_PASSWORD"
 
+echo "Contraseña FTP : $FTP_PASSWORD"
+echo "Username FTP : $FTP_USER"
+echo "Directorio FTP : $FTP_DIR"
+echo "IP ZEROTIER : $IP"
+echo "IP LOCAL : $IP"
 
 

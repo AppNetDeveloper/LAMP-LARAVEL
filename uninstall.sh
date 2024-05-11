@@ -1,15 +1,46 @@
 #!/bin/sh
+systemctl daemon-reload
 sudo dpkg --configure -a
-# Detener y deshabilitar servicios
+systemctl daemon-reload
 # y eliminarlos del sistema
+
+
+#!/bin/bash
+
+# 1. Detener servicios web
+sudo systemctl stop apache2
+sudo systemctl stop nginx
+sudo systemctl stop mariadb
+
+# 2. Desinstalar Nginx con autoremove
+sudo apt-get -y purge --auto-remove nginx nginx-common
+
+# 3. Desinstalar Apache con autoremove
+sudo apt-get -y purge --auto-remove apache2 apache2-utils apache2-data libapache2-mod-php* 
+
+# 4. Desinstalar MariaDB con autoremove
+sudo apt-get -y purge --auto-remove mariadb-server mariadb-client
+
+# 5. Desinstalar PHP con autoremove
+sudo apt-get -y purge --auto-remove `dpkg -l | grep ^ii | awk '{print $2}' | grep -E 'php|php-|^mysql|^libapache2-mod-|^phpMyAdmin' | xargs`
+
+# 6. Eliminar directorios y archivos restantes (opcional)
+# ¡Utiliza con precaución!
+sudo rm -rf /etc/php /usr/local/lib/php /usr/share/php /var/lib/php /opt/lampp/lampp/htdocs/phpMyAdmin
+sudo rm -rf /etc/nginx /var/lib/nginx 
+sudo rm -rf /etc/apache2 /var/lib/apache2
+sudo rm -rf /etc/mysql /var/lib/mysql
+
 
 # Apache
 sudo systemctl stop apache2
 sudo systemctl disable apache2
 sudo systemctl stop apache*
 sudo systemctl disable apache*
-sudo apt-get -y remove --purge apache2
-sudo apt-get -y remove --purge apache*
+sudo apt-get -y remove apache2
+sudo apt-get -y remove apache*
+sudo apt-get -y purge apache2
+sudo apt-get -y purge apache*
 # Nginx
 sudo systemctl stop nginx
 sudo systemctl disable nginx
@@ -22,16 +53,24 @@ sudo systemctl stop php*
 sudo systemctl disable php8.3-fpm
 sudo systemctl disable php8.2-fpm
 sudo systemctl disable php*
+sudo apt-get -y purge `dpkg -l | grep ^ii | awk '{print $2}' | grep -E 'php|php-|^mysql|^libapache2-mod-|^phpMyAdmin' | xargs`
+
 sudo apt-get -y remove --purge php8.2-fpm
 sudo apt-get -y remove --purge php8.3-fpm
 sudo apt-get -y remove --purge php*
+udo apt-get -y remove --purge php8.2-common
+sudo apt-get -y remove --purge php8.3-common
+sudo apt-get -y remove --purge php*
+sudo apt-get -y remove php8.2-common --purge
+sudo apt-get -y remove php8.3-common --purge
+sudo apt-get -y remove php8.3-common --purge
 
 # MariaDB
 sudo systemctl stop mariadb
 sudo systemctl disable mariadb
 sudo apt remove -y mariadb-server
 sudo apt-get -y remove --purge mariadb-*
-s
+
 # MySQL
 sudo systemctl stop mysql
 sudo systemctl disable mysql
@@ -87,7 +126,8 @@ sudo rm -rf /var/lib/redis # Datos de Redis
 sudo rm -rf /etc/jenkins # Configuración de Jenkins
 sudo rm -rf /etc/webmin # Configuración de Webmin
 sudo rm -rf /etc/proftpd
-
+sudo rm -rf /var/www/phpmyadmin
+sudo rm -rf /var/www/phpMyAdmin*
 # Eliminar grupo de MySQL
 sudo delgroup mysql
 
@@ -97,9 +137,28 @@ sudo delgroup mysql
 sudo rm -rf /etc/apt/sources.list.d/php.list # Repositorio de PHP
 sudo rm -rf /etc/apt/sources.list.d/mssql-release.list # Repositorio de SQL Server
 sudo rm -rf /etc/apt/sources.list.d/webmin.list # Repositorio de Webmin
+sudo rm -rf /etc/apt/sources.list.d/*nginx* # Repositorio de nginx
+sudo rm -rf /etc/apt/sources.list.d/nginx* # Repositorio de nginx
 
-sudo apt -y autoremove # Elimina paquetes no utilizados
+# Crear una copia de seguridad del archivo sources.list
+cp /etc/apt/sources.list /etc/apt/sources.list.bak
 
+# Eliminar líneas duplicadas
+sed -i 'd/^\s*\#/g' /etc/apt/sources.list # Eliminar líneas de comentario
+sed -i 'd/\s*$/g' /etc/apt/sources.list # Eliminar líneas vacías
+sort /etc/apt/sources.list | uniq -d > /tmp/sources.list.uniq
+
+# Reemplazar el archivo sources.list con la versión depurada
+mv /tmp/sources.list.uniq /etc/apt/sources.list
+
+# Actualizar la caché de paquetes
+
+sudo apt-get -y update
+sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
+# sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
+sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
+systemctl daemon-reload
+sudo apt autoremove
 #sudo apt -y update # Actualiza la lista de paquetes
 
 sudo dpkg --configure -a

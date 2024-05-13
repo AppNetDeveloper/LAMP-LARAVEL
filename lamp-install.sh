@@ -1383,8 +1383,8 @@ else
 
 fi
 echo "he limpiado carpeta html"
-echo "instalor ftp"
-#Installar servidor ftp
+echo "instalor ftp y sftp"
+#Installar servidor ftp y sftp
 if [ "$FTP" = "install" ]; then
 	    # Función para generar una contraseña segura
         echo "Función para generar una contraseña segura"
@@ -1472,7 +1472,7 @@ sudo systemctl start clamav-daemon
 sudo systemctl enable clamav-daemon
 sudo systemctl start fail2ban
 sudo systemctl enable fail2ban
-
+sudo apt -y install openssh-server
          
 
 
@@ -1484,12 +1484,14 @@ if [ "$INSTALL" = "none" ]; then
 elif [ "$INSTALL" != "" ]; then
     echo 'Instalando appnetd_cloud y limpiar antes de empezar'
 
+cd /var/www/ || exit
+mkdir phpmyadmin
 
 	
 	sudo apt -y install -y wget zip
 	wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
 	sudo unzip phpMyAdmin-5.2.1-all-languages.zip
-	mv phpMyAdmin-5.2.1-all-languages phpmyadmin
+	mv phpMyAdmin-5.2.1-all-languages/* phpmyadmin
 
 
 	mkdir /var/www/html/
@@ -1511,9 +1513,15 @@ elif [ "$INSTALL" != "" ]; then
 sed -i "s/^\(FTP_HOST=\).*/\1${FTP_HOST}/" "$ENV_FILE"
 sed -i "s/^\(FTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
 sed -i "s/^\(FTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
-sed -i "s/^\(FTP_ROOT=\).*/\1'${FTP_ROOT}'/" "$ENV_FILE"
+sed -i "s/^\(FTP_ROOT=\).*/\1$(echo "$FTP_ROOT" | sed 's/\//\\\//g')/" "$ENV_FILE"
 sed -i "s/^\(FTP_PASSIVE=\).*/\1${FTP_PASSIVE}/" "$ENV_FILE"
 sed -i "s/^\(FTP_THROW=\).*/\1${FTP_THROW}/" "$ENV_FILE"
+
+sed -i "s/^\(SFTP_HOST=\).*/\1${FTP_HOST}/" "$ENV_FILE"
+sed -i "s/^\(SFTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
+sed -i "s/^\(SFTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
+sed -i "s/^\(SFTP_ROOT=\).*/\1$(echo "$FTP_ROOT" | sed 's/\//\\\//g')/" "$ENV_FILE"
+
 
  
 

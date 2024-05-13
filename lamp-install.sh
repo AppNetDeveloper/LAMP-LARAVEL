@@ -1434,8 +1434,8 @@ if [ "$FTP" = "install" ]; then
 
     echo "He terminado con FTP"
 
-    FTP_HOST=localhost   
-    FTP_ROOT=/var/www/ftp/
+    FTP_HOST='localhost'   
+    FTP_ROOT='/var/www/ftp/'
     FTP_PORT=21
     FTP_PASSIVE=true
     FTP_THROW=false
@@ -1444,7 +1444,36 @@ fi
 
 
 
+    sudo systemctl stop ufw
+    sudo systemctl disable ufw
+    sudo apt -y purge ufw
+    sudo systemctl stop firewalld
+    sudo systemctl disable firewalld
+    sudo apt remove ufw -y
+    sudo apt autoremove -y
+    sudo apt remove firewalld
+    sudo apt autoremove -y
+    sudo apt -y purge firewalld
 
+    cd /root/
+    wget https://download.configserver.com/csf.tgz
+    tar -xzf csf.tgz
+    cd csf
+    sudo ./install.sh
+    sudo sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
+    systemctl start csf
+    systemctl enable csf
+    sudo csf -x
+    sudo csf -e
+
+sudo apt-get install fail2ban -y
+sudo apt-get install clamav clamav-daemon -y
+sudo systemctl start clamav-daemon
+sudo systemctl enable clamav-daemon
+sudo systemctl start fail2ban
+sudo systemctl enable fail2ban
+
+         
 
 
 # descargar de git
@@ -1482,7 +1511,7 @@ elif [ "$INSTALL" != "" ]; then
 sed -i "s/^\(FTP_HOST=\).*/\1${FTP_HOST}/" "$ENV_FILE"
 sed -i "s/^\(FTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
 sed -i "s/^\(FTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
-sed -i "s/^\(FTP_ROOT=\).*/\1${FTP_ROOT}/" "$ENV_FILE"
+sed -i "s/^\(FTP_ROOT=\).*/\1'${FTP_ROOT}'/" "$ENV_FILE"
 sed -i "s/^\(FTP_PASSIVE=\).*/\1${FTP_PASSIVE}/" "$ENV_FILE"
 sed -i "s/^\(FTP_THROW=\).*/\1${FTP_THROW}/" "$ENV_FILE"
 
@@ -1530,36 +1559,7 @@ sudo chmod -R g+rwx /var/www/html
 sudo chown -R :nginx /var/www/html
 sudo chmod -R g+rwx /var/www/html
 
-sudo systemctl stop ufw
-sudo systemctl disable ufw
-sudo apt -y purge ufw
-sudo systemctl stop firewalld
-sudo systemctl disable firewalld
-sudo apt remove ufw -y
-sudo apt autoremove -y
-sudo apt remove firewalld
-sudo apt autoremove -y
-sudo apt -y purge firewalld
-
-sudo cd /root/
-wget https://download.configserver.com/csf.tgz
-tar -xzf csf.tgz
-cd csf
-sudo ./install.sh
-sudo sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
-systemctl start csf
-systemctl enable csf
-sudo csf -x
-sudo csf -e
-
-sudo apt-get install fail2ban -y
-sudo apt-get install clamav clamav-daemon -y
-sudo systemctl start clamav-daemon
-sudo systemctl enable clamav-daemon
-sudo systemctl start fail2ban
-sudo systemctl enable fail2ban
-
-
+                           
 
 
 

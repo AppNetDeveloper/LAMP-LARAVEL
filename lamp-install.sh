@@ -1435,9 +1435,9 @@ if [ "$FTP" = "install" ]; then
     echo "He terminado con FTP"
 
     FTP_HOST=localhost   
+    FTP_ROOT=/var/www/ftp/
     FTP_PORT=21
-    FTP_ROOT=/var/www/ftp
-    FTP_PASSIVE=false
+    FTP_PASSIVE=true
     FTP_THROW=false
 
 fi
@@ -1479,13 +1479,12 @@ elif [ "$INSTALL" != "" ]; then
 	sed -i "s/^\(DB_PASSWORD=\).*/\1${NEW_PASSWORD}/" "$ENV_FILE"
     sed -i "s/^\(APP_URL=\).*/\1http:\/\/${IP}\//" "$ENV_FILE"
 
-    sed -y "s/^\(FTP_HOST=\).*/\1'${FTP_HOST}'/" "$ENV_FILE"
-    sed -y "s/^\(FTP_PORT=\).*/\1'${FTP_PORT}'/" "$ENV_FILE"
-    sed -y  "s/^\(FTP_USERNAME=\).*/\1'${FTP_USERNAME}'/" "$ENV_FILE"
-    sed -y "s/^\(FTP_PASSWORD=\).*/\1$'{FTP_PASSWORD}'/" "$ENV_FILE"
-    sed -y "s/^\(FTP_ROOT=\).*/\1'${FTP_ROOT}'/" "$ENV_FILE"
-    sed -y "s/^\(FTP_PASSIVE=\).*/\1'${FTP_PASSIVE}'/" "$ENV_FILE"
-    sed -y "s/^\(FTP_THROW=\).*/\1'${FTP_THROW}'/" "$ENV_FILE"
+sed -i "s/^\(FTP_HOST=\).*/\1${FTP_HOST}/" "$ENV_FILE"
+sed -i "s/^\(FTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
+sed -i "s/^\(FTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
+sed -i "s/^\(FTP_ROOT=\).*/\1${FTP_ROOT}/" "$ENV_FILE"
+sed -i "s/^\(FTP_PASSIVE=\).*/\1${FTP_PASSIVE}/" "$ENV_FILE"
+sed -i "s/^\(FTP_THROW=\).*/\1${FTP_THROW}/" "$ENV_FILE"
 
  
 

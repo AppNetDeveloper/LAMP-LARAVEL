@@ -388,6 +388,12 @@ server {
 }
 EOL'
 
+# Actualizar configuración de Nginx para default.conf
+sudo sed -i "s/server_name localhost.*/server_name localhost $IP 127.0.0.1;/" /etc/nginx/sites-available/default.conf
+
+# Actualizar configuración de Nginx para phpmyadmin.conf
+sudo sed -i "s/server_name localhost.*/server_name localhost $IP 127.0.0.1;/" /etc/nginx/sites-available/phpmyadmin.conf
+
 
 # Descarga las listas de IPs de Cloudflare (IPv4 e IPv6) y concatena en un solo archivo
 curl -sL https://www.cloudflare.com/ips-v4/ https://www.cloudflare.com/ips-v6/ | cat > ipscloudflare.txt
@@ -1383,7 +1389,7 @@ if [ "$FTP" = "install" ]; then
 	    # Función para generar una contraseña segura
         echo "Función para generar una contraseña segura"
 	generate_FTP_PASSWORD() {
-	  openssl rand -base64 32 | tr -dc 'a-zA-Z0-9-_!@#$%^&*()+=\[\]{};:'"<>,./?\\|\~" | head -c 16
+	  openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 16
 	}
 	
 	# Generar nombre de usuario y contraseña aleatorios
@@ -1427,6 +1433,13 @@ if [ "$FTP" = "install" ]; then
 	sudo systemctl restart proftpd
 
     echo "He terminado con FTP"
+
+    FTP_HOST=localhost   
+    FTP_PORT=21
+    FTP_ROOT=/var/www/ftp
+    FTP_PASSIVE=false
+    FTP_THROW=false
+
 fi
 
 
@@ -1464,8 +1477,15 @@ elif [ "$INSTALL" != "" ]; then
 	sed -i "s/^\(DB_DATABASE=\).*/\1${DB}/" "$ENV_FILE"
 	sed -i "s/^\(DB_USERNAME=\).*/\1${NEW_USERNAME}/" "$ENV_FILE"
 	sed -i "s/^\(DB_PASSWORD=\).*/\1${NEW_PASSWORD}/" "$ENV_FILE"
-    sed -i "s/^\(APP_URL=\).*/\1${IP}/" "$ENV_FILE"
- 
+    sed -i "s/^\(APP_URL=\).*/\1http:\/\/${IP}\//" "$ENV_FILE"
+
+    sed -y "s/^\(FTP_HOST=\).*/\1'${FTP_HOST}'/" "$ENV_FILE"
+    sed -y "s/^\(FTP_PORT=\).*/\1'${FTP_PORT}'/" "$ENV_FILE"
+    sed -y  "s/^\(FTP_USERNAME=\).*/\1'${FTP_USERNAME}'/" "$ENV_FILE"
+    sed -y "s/^\(FTP_PASSWORD=\).*/\1$'{FTP_PASSWORD}'/" "$ENV_FILE"
+    sed -y "s/^\(FTP_ROOT=\).*/\1'${FTP_ROOT}'/" "$ENV_FILE"
+    sed -y "s/^\(FTP_PASSIVE=\).*/\1'${FTP_PASSIVE}'/" "$ENV_FILE"
+    sed -y "s/^\(FTP_THROW=\).*/\1'${FTP_THROW}'/" "$ENV_FILE"
 
  
 
@@ -1510,6 +1530,39 @@ sudo chown -R :www-data /var/www/html
 sudo chmod -R g+rwx /var/www/html
 sudo chown -R :nginx /var/www/html
 sudo chmod -R g+rwx /var/www/html
+
+sudo systemctl stop ufw
+sudo systemctl disable ufw
+sudo apt -y purge ufw
+sudo systemctl stop firewalld
+sudo systemctl disable firewalld
+sudo apt remove ufw -y
+sudo apt autoremove -y
+sudo apt remove firewalld
+sudo apt autoremove -y
+sudo apt -y purge firewalld
+
+sudo cd /root/
+wget https://download.configserver.com/csf.tgz
+tar -xzf csf.tgz
+cd csf
+sudo ./install.sh
+sudo sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
+systemctl start csf
+systemctl enable csf
+sudo csf -x
+sudo csf -e
+
+sudo apt-get install fail2ban -y
+sudo apt-get install clamav clamav-daemon -y
+sudo systemctl start clamav-daemon
+sudo systemctl enable clamav-daemon
+sudo systemctl start fail2ban
+sudo systemctl enable fail2ban
+
+
+
+
 
 
 

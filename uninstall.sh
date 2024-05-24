@@ -158,4 +158,12 @@ systemctl daemon-reload
 sudo apt autoremove
 #sudo apt -y update # Actualiza la lista de paquetes
 
+chmod 777 /root/appnetdev-monitor.sh
+sudo systemctl daemon-reload
+sudo systemctl disable appnetmonitor
+sudo systemctl stop appnetmonitor
+sudo rm -rf /etc/systemd/system/appnetmonitor.service
+sudo rm -rf /root/appnetdev-monitor.sh
+
+
 sudo dpkg --configure -a

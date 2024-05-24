@@ -1473,7 +1473,9 @@ sudo systemctl enable clamav-daemon
 sudo systemctl start fail2ban
 sudo systemctl enable fail2ban
 sudo apt -y install openssh-server
-         
+sudo systemctl start openssh
+sudo systemctl enable openssh
+sudo apt -y install bridge-utils
 
 
 # descargar de git
@@ -1496,13 +1498,21 @@ mkdir phpmyadmin
 
 	mkdir /var/www/html/
 	cd /var/www/html/ || exit
-	
+	    # Generar el token
+TOKENHOST=$(openssl rand -hex 32)
+
+# Reemplazar el valor del token en el seeder
+sed -i "s/\['token'\] =>.*/\['token'\] => '$TOKENHOST',/" database/seeders/HostListSeeder.php
+
 	echo 'clonar proyecto desde git'
 		git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Gestion-v3.1.git /var/www/html > /var/www/log.txt 2>&1
 	echo 'instalar .env'
 	cp .env.example .env
 	# Ruta del archivo .env
 	ENV_FILE=".env"
+
+
+
 
 	# Utilizar sed para reemplazar la línea que contiene DB_PASSWORD
 	sed -i "s/^\(DB_DATABASE=\).*/\1${DB}/" "$ENV_FILE"

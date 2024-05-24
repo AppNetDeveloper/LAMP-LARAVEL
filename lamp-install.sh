@@ -1548,6 +1548,9 @@ sed -i "s/^\(SFTP_ROOT=\).*/\1$(echo "$FTP_ROOT" | sed 's/\//\\\//g')/" "$ENV_FI
 	/usr/local/bin/composer update
 	/usr/bin/npm run build
 	echo 'dar los permisos necesario'
+    cd storage  || exit
+    unzip logos.zip -d app
+    cd /var/www/html/ || exit
  	sudo rm -rf /var/www/html/public/storage
   	sudo php artisan storage:link
 	sudo chmod -R 777 /var/www

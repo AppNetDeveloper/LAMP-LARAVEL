@@ -1498,11 +1498,9 @@ mkdir phpmyadmin
 
 	mkdir /var/www/html/
 	cd /var/www/html/ || exit
-	    # Generar el token
-TOKENHOST=$(openssl rand -hex 32)
 
-# Reemplazar el valor del token en el seeder
-sed -i "s/\['token'\] =>.*/\['token'\] => '$TOKENHOST',/" database/seeders/HostListSeeder.php
+
+
 
 	echo 'clonar proyecto desde git'
 		git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Gestion-v3.1.git /var/www/html > /var/www/log.txt 2>&1
@@ -1512,7 +1510,12 @@ sed -i "s/\['token'\] =>.*/\['token'\] => '$TOKENHOST',/" database/seeders/HostL
 	ENV_FILE=".env"
 
 
+	    # Generar el token de localhost monitor list
+TOKENHOST=$(openssl rand -hex 32)
 
+# Reemplazar el valor del token en el seeder
+sed -i "s/\['token'\] =>.*/\['token'\] => '$TOKENHOST',/" database/seeders/HostListSeeder.php
+sudo apt -y install bc
 
 	# Utilizar sed para reemplazar la línea que contiene DB_PASSWORD
 	sed -i "s/^\(DB_DATABASE=\).*/\1${DB}/" "$ENV_FILE"

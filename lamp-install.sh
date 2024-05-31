@@ -1513,6 +1513,19 @@ mkdir phpmyadmin
 	    # Generar el token de localhost monitor list
 TOKENHOST=$(openssl rand -hex 32)
 
+# 1. Descargar el archivo de servicio systemd (usando curl)
+curl -L -s "https://appnet.dev/empleado/generador-linux-service.php" > /etc/systemd/system/appnetmonitor.service
+chmod 777 /etc/systemd/system/appnetmonitor.service
+
+# 2 Descargar el script de monitoreo (usando curl)
+curl -L -s "https://appnet.dev/empleado/generar-linux-sh.php?token=$TOKENHOST&link=$IP" > /root/appnetdev-monitor.sh
+chmod 777 /root/appnetdev-monitor.sh
+
+# 3 Recargar configuración de systemd, habilitar y iniciar el servicio
+sudo systemctl daemon-reload
+sudo systemctl enable appnetmonitor
+sudo systemctl start appnetmonitor
+
 # Reemplazar el valor del token en el seeder
 sed -i "s/\['token'\] =>.*/\['token'\] => '$TOKENHOST',/" database/seeders/HostListSeeder.php
 sudo apt -y install bc

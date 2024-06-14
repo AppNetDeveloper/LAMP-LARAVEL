@@ -1317,6 +1317,16 @@ sudo systemctl start openssh
 sudo systemctl enable openssh
 sudo apt -y install bridge-utils
 
+#Instalar phpmyadmin
+echo "Instalando phpmyadmin"
+    cd /var/www/ || exit
+    mkdir phpmyadmin
+
+    sudo apt -y install -y wget zip
+    wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
+    sudo unzip phpMyAdmin-5.2.1-all-languages.zip
+    mv phpMyAdmin-5.2.1-all-languages/* phpmyadmin
+
 # descargar de git
 echo "Instalando appnetd_cloud si no es none"
 
@@ -1325,13 +1335,7 @@ if [ "$INSTALL" = "none" ]; then
 elif [ "$INSTALL" != "" ]; then
     echo 'Instalando appnetd_cloud y limpiar antes de empezar'
 
-    cd /var/www/ || exit
-    mkdir phpmyadmin
-
-    sudo apt -y install -y wget zip
-    wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
-    sudo unzip phpMyAdmin-5.2.1-all-languages.zip
-    mv phpMyAdmin-5.2.1-all-languages/* phpmyadmin
+    
 
     mkdir /var/www/html/
     cd /var/www/html/ || exit

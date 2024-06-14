@@ -1120,6 +1120,14 @@ elif [ "$DB" != "" ]; then
 
     curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash
 
+    apt install software-properties-common apt-transport-https -y
+curl -fsSL http://mirror.mariadb.org/PublicKey_v2 | sudo gpg --dearmor | sudo tee /usr/share/keyrings/mariadb.gpg > /dev/null
+echo "deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/mariadb.gpg] http://mirror.mariadb.org/repo/11.4.2/ubuntu/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mariadb.list
+echo "deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/mariadb.gpg] http://mirror.mariadb.org/repo/11.4.2/debian/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mariadb.list
+
+
+apt update && apt upgrade -y
+
     # Update package lists
     sudo apt-get update -y
 

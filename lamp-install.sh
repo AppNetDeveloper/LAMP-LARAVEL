@@ -247,6 +247,7 @@ sudo touch /var/cache/nginx/uwsgi_temp
 sudo touch /var/cache/nginx/scgi_temp
 
 # Crear el archivo fastcgi.conf y agregar el contenido
+sudo mkdir /etc/nginx/snippets
 cat <<EOL > /etc/nginx/snippets/fastcgi.conf
 # regex para dividir $uri en $fastcgi_script_name y $fastcgi_path
 fastcgi_split_path_info ^(.+\.php)(/.+)$;
@@ -831,6 +832,9 @@ sudo apt -y autoremove --purge
 
 # Instalar curl y wget
 sudo apt -y install -y curl wget
+
+sudo wget -qO /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+sudo echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
 
 # Descargar la clave GPG para el repositorio de PHP
 sudo wget -qO /etc/apt/trusted.gpg.d/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg

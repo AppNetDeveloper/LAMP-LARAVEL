@@ -8,6 +8,50 @@ cd /root/csf
 sudo /.uninstall.sh
 sudo rm -rf /root/csf
 
+echo "Deteniendo el servicio de Nginx..."
+sudo systemctl stop nginx 2>/dev/null || sudo killall nginx 2>/dev/null
+
+# Eliminar archivos y directorios de Nginx
+echo "Eliminando archivos y directorios de Nginx..."
+sudo rm -rf /etc/nginx
+sudo rm -f /usr/sbin/nginx
+sudo rm -rf /var/log/nginx
+sudo rm -f /var/run/nginx.pid
+sudo rm -f /var/run/nginx.lock
+sudo rm -rf /var/cache/nginx
+
+# Eliminar el usuario y grupo nginx
+echo "Eliminando usuario y grupo nginx..."
+sudo deluser nginx 2>/dev/null
+sudo delgroup nginx 2>/dev/null
+
+# Eliminar archivos de servicio de systemd si existen
+echo "Eliminando archivos de servicio de systemd..."
+sudo rm -f /etc/systemd/system/nginx.service
+sudo systemctl daemon-reload
+
+echo "Nginx ha sido desinstalado correctamente."
+# Directorio de instalación de Nginx
+NGINX_PREFIX="/etc/nginx"
+
+# Detener el servicio Nginx (si está corriendo)
+echo "Deteniendo Nginx..."
+sudo systemctl stop nginx
+
+# Eliminar archivos y directorios de Nginx
+echo "Eliminando archivos de Nginx..."
+sudo rm -rf "$NGINX_PREFIX"
+sudo rm -rf /usr/sbin/nginx
+sudo rm -rf /var/log/nginx
+sudo rm -rf /var/cache/nginx
+
+# Eliminar usuario y grupo nginx (opcional)
+echo "Eliminando usuario y grupo nginx..."
+sudo userdel nginx
+sudo groupdel nginx
+
+echo "Nginx desinstalado correctamente."
+
 # 1. Detener servicios web
 sudo systemctl stop apache2
 sudo systemctl stop nginx
@@ -164,6 +208,9 @@ sudo systemctl disable appnetmonitor
 sudo systemctl stop appnetmonitor
 sudo rm -rf /etc/systemd/system/appnetmonitor.service
 sudo rm -rf /root/appnetdev-monitor.sh
+
+rm -rf /etc/apt/sources.list.d/mariad*
+
 
 
 sudo dpkg --configure -a

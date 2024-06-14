@@ -1,8 +1,6 @@
 #!/bin/sh
 cd ~ || exit
 
-
-
 DB="$1"
 INSTALL="$2"
 VPN="$3"
@@ -11,7 +9,6 @@ FTP="$5"
 ffmpeg="$6"
 opencv="$7"
 TensorFlow="$8"
-
 
 if [ "$DB" = "none" ]; then
     echo "Sin MariaDB...."
@@ -22,7 +19,7 @@ else
     echo "Por favor especifica 'none' o 'appnetd_cloud' como argumento al ejecutar este script. Ejemplo: sh install.sh apache none o appnetd_cloud o sh install.sh nginx none o uma"
     exit 1
 fi
-	
+
 if [ "$INSTALL" = "none" ]; then
     echo 'Sin Installar  '
 elif [ "$INSTALL" != "" ]; then
@@ -37,18 +34,17 @@ if [ "$VPN" = "none" ]; then
     IP=localhost
 elif [ "$VPN" != "" ]; then
     echo 'Installar VPN Zerotier'
-	rm /etc/apt/sources.list.d/zerotier* 
+    rm /etc/apt/sources.list.d/zerotier*
     sudo pt remove --yes zerotier-one
     sudo curl -s https://install.zerotier.com | sudo bash
-	sudo zerotier-cli join "$VPN"
-	sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'
+    sudo zerotier-cli join "$VPN"
+    sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'
     IP=$(sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
     echo "IP ZEROTIER: $IP"
 else
     echo "Por favor especifica none o EL ID RED en instalacion "
     exit 1
 fi
-
 
 if [ "$FTP" = "install" ]; then
     echo "Instalando ftp server..."
@@ -57,12 +53,12 @@ elif [ "$FTP" = "none" ]; then
 else
     if [ "$FTP" != "" ]; then
         echo "Usar propio servidor FTP"
-        
+
         # Valor Usuario:contraseña
         # Separar en dos variables
         FTP_USER=$(echo "$FTP" | cut -d ':' -f 1)
         FTP_PASSWORD=$(echo "$FTP" | cut -d ':' -f 2)
-        
+
         # Mostrar los valores separados
         echo "Usuario: $FTP_USER"
         echo "Contraseña: $FTP_PASSWORD"
@@ -71,7 +67,6 @@ else
         exit 1
     fi
 fi
-
 
 if [ "$ffmpeg" = "install" ]; then
     echo "Instalando ffmpeg.."
@@ -85,7 +80,7 @@ fi
 if [ "$opencv" = "install" ]; then
     echo "Instalando opencv.."
 elif [ "$opencv" = "none" ]; then
-    echo "Instalando opencv..."
+    echo "Sin opencv..."
 else
     echo "Por favor especifica 'install' o 'none' donde install install opencv y none sin instalar opencv"
     exit 1
@@ -100,32 +95,45 @@ else
     exit 1
 fi
 
+sudo apt-get update
+sudo apt-get -y install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Obtener la arquitectura de la CPU
 ARCH=$(uname -m)
 
 if [ "$ARCH" = "x86_64" ]; then
-  echo "**Añadiendo repositorios Debian nonfree para x86_64 (Debian 12)**"
+    echo "**Añadiendo repositorios Debian nonfree para x86_64 (Debian 12)**"
 
-  # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free" al archivo /etc/apt/sources.list
-  echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
+    # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free" al archivo /etc/apt/sources.list
+    echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
 
-  # Actualizar la lista de paquetes
-  sudo apt update
+    # Actualizar la lista de paquetes
+    sudo apt update
 
 elif [ "$ARCH" = "aarch64" ]; then
-  echo "**Añadiendo repositorios Debian nonfree para aarch64 (Debian 12)**"
+    echo "**Añadiendo repositorios Debian nonfree para aarch64 (Debian 12)**"
 
-  # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free"  al archivo /etc/apt/sources.list
-  echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
-echo "deb [arch=armhf] http://httpredir.debian.org/debian/ buster main contrib non-free" | sudo tee -a /etc/apt/sources.list
-  # Actualizar la lista de paquetes
-  sudo apt update
+    # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free"  al archivo /etc/apt/sources.list
+    echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
+    echo "deb [arch=armhf] http://httpredir.debian.org/debian/ buster main contrib non-free" | sudo tee -a /etc/apt/sources.list
+    # Actualizar la lista de paquetes
+    sudo apt update
 
 else
-  echo "**Arquitectura de CPU no compatible: $ARCH**"
-  echo "Este script solo funciona en sistemas x86_64 o aarch64."
-  exit 1
+    echo "**Arquitectura de CPU no compatible: $ARCH**"
+    echo "Este script solo funciona en sistemas x86_64 o aarch64."
+    exit 1
 fi
 
 echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
@@ -135,8 +143,8 @@ cp /etc/apt/sources.list /etc/apt/sources.list.bak
 
 # Eliminar líneas duplicadas
 sed -i 'd/^\s*\#/g' /etc/apt/sources.list # Eliminar líneas de comentario
-sed -i 'd/\s*$/g' /etc/apt/sources.list # Eliminar líneas vacías
-sort /etc/apt/sources.list | uniq -d > /tmp/sources.list.uniq
+sed -i 'd/\s*$/g' /etc/apt/sources.list   # Eliminar líneas vacías
+sort /etc/apt/sources.list | uniq -d >/tmp/sources.list.uniq
 
 # Reemplazar el archivo sources.list con la versión depurada
 mv /tmp/sources.list.uniq /etc/apt/sources.list
@@ -145,9 +153,9 @@ mv /tmp/sources.list.uniq /etc/apt/sources.list
 sudo apt update
 
 sudo apt-get -y update
-sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
+sudo apt-get -y upgrade # Uncomment this line to install the newest versions of all packages currently installed
 # sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
-sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
+sudo apt-get -y autoremove # Uncomment this line to remove packages that are now no longer needed
 systemctl daemon-reload
 
 # Crear directorio de instalación
@@ -159,40 +167,16 @@ sudo mkdir /var/www/html
 apt -y install sudo
 
 # 1. INSTALL THE NGINX
- echo "Instalando Nginx..."
-    # Aquí va el código para instalar Nginx.
-sudo rm -rf /etc/apt/source.list.d/*nginx*
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
-    | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
+echo "Instalando Nginx..."
+# Aquí va el código para instalar Nginx.
 
-gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
-
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-http://nginx.org/packages/debian `lsb_release -cs` nginx" \
-    | sudo tee /etc/apt/sources.list.d/nginx2.list
-
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-http://nginx.org/packages/mainline/debian `lsb_release -cs` nginx" \
-    | sudo tee /etc/apt/sources.list.d/nginx3.list
-
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-http://nginx.org/packages/mainline/ubuntu `lsb_release -cs` nginx" \
-    | sudo tee /etc/apt/sources.list.d/nginx4.list
-
-curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
-| sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
-    | sudo tee /etc/apt/sources.list.d/nginx.list
-    
 # Crear una copia de seguridad del archivo sources.list
 cp /etc/apt/sources.list /etc/apt/sources.list.bak
 
 # Eliminar líneas duplicadas
 sed -i 'd/^\s*\#/g' /etc/apt/sources.list # Eliminar líneas de comentario
-sed -i 'd/\s*$/g' /etc/apt/sources.list # Eliminar líneas vacías
-sort /etc/apt/sources.list | uniq -d > /tmp/sources.list.uniq
+sed -i 'd/\s*$/g' /etc/apt/sources.list   # Eliminar líneas vacías
+sort /etc/apt/sources.list | uniq -d >/tmp/sources.list.uniq
 
 # Reemplazar el archivo sources.list con la versión depurada
 mv /tmp/sources.list.uniq /etc/apt/sources.list
@@ -200,28 +184,127 @@ mv /tmp/sources.list.uniq /etc/apt/sources.list
 # Actualizar la caché de paquetes
 sudo apt update
 
-	
 sudo apt -y purge apache
 sudo apt -y purge apache2
-	sudo apt list nginx
-	sudo apt -y install nginx=1.24*
-	sudo apt -y install nginx-extras
-    sudo apt -y install nginx-full
-	sudo apt -y install nginx-*
-    sudo apt -y install nginx-module-*
-    sudo apt -y install nginx-full
+sudo apt -y purge nginx
 
-	
-	
-	sudo chmod 755 -R /var/www/html/
-	sudo chown www-data:www-data -R /var/www/html/
+sudo apt-get install build-essential libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev openssl libgd-dev libgeoip-dev libperl-dev wget
 
-	#backup conf
-	echo 'hacemos una copia de nginx conf antes de poner la nueva'
-	sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
-	sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.back
-	sudo mv /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/default.back
+sudo apt -y install wget 
 
+wget http://nginx.org/download/nginx-1.27.0.tar.gz
+tar -zxvf nginx-1.27.0.tar.gz
+mkdir /etc/nginx
+cd nginx-1.27.0 || exit
+mv * /etc/nginx/
+cd /etc/nginx/ || exit
+
+./configure \
+--prefix=/etc/nginx                                                \
+--sbin-path=/usr/sbin/nginx                                        \
+--conf-path=/etc/nginx/nginx.conf                                  \
+--error-log-path=/var/log/nginx/error.log                          \
+--http-log-path=/var/log/nginx/access.log                          \
+--pid-path=/var/run/nginx.pid                                      \
+--lock-path=/var/run/nginx.lock                                    \
+--http-client-body-temp-path=/var/cache/nginx/client_temp          \
+--http-proxy-temp-path=/var/cache/nginx/proxy_temp                 \
+--http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp             \
+--http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp                 \
+--http-scgi-temp-path=/var/cache/nginx/scgi_temp                   \
+--user=nginx                                                       \
+--group=nginx                                                      \
+--with-http_ssl_module                                             \
+--with-http_realip_module                                          \
+--with-http_addition_module                                        \
+--with-http_sub_module                                             \
+--with-http_dav_module                                             \
+--with-http_flv_module                                             \
+--with-http_mp4_module                                             \
+--with-http_gunzip_module                                          \
+--with-http_gzip_static_module                                     \
+--with-http_random_index_module                                    \
+--with-http_secure_link_module                                     \
+--with-http_stub_status_module                                     \
+--with-http_auth_request_module                                    \
+--with-mail                                                        \
+--with-mail_ssl_module                                             \
+--with-file-aio                                                    \
+--with-http_v2_module                                              \
+--with-threads                                                     \
+--with-stream                                                      \
+--with-stream_ssl_module                                           \
+--with-http_slice_module
+
+
+make
+sudo make install
+sudo useradd -r nginx
+sudo mkdir /var/cache/nginx
+sudo touch /var/cache/nginx/client_temp
+sudo touch /var/cache/nginx/proxy_temp
+sudo touch /var/cache/nginx/fastcgi_temp
+sudo touch /var/cache/nginx/uwsgi_temp
+sudo touch /var/cache/nginx/scgi_temp
+
+# Crear el archivo fastcgi.conf y agregar el contenido
+cat <<EOL > /etc/nginx/snippets/fastcgi.conf
+# regex para dividir $uri en $fastcgi_script_name y $fastcgi_path
+fastcgi_split_path_info ^(.+\.php)(/.+)$;
+
+# Verificar que el script PHP existe antes de pasarlo
+try_files \$fastcgi_script_name =404;
+
+# Evitar que try_files reinicie $fastcgi_path_info
+# ver: http://trac.nginx.org/nginx/ticket/321
+set \$path_info \$fastcgi_path_info;
+fastcgi_param PATH_INFO \$path_info;
+
+fastcgi_index index.php;
+include fastcgi.conf;
+EOL
+
+
+# Crear el archivo de servicio de systemd para Nginx
+sudo bash -c 'cat << EOF > /etc/systemd/system/nginx.service
+[Unit]
+Description=The NGINX HTTP and reverse proxy server
+After=syslog.target network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target
+        
+[Service]
+Type=forking
+PIDFile=/var/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t
+ExecStart=/usr/sbin/nginx
+ExecReload=/usr/sbin/nginx -s reload
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true
+        
+[Install]
+WantedBy=multi-user.target
+EOF'
+
+# Recargar systemd para que reconozca el nuevo servicio
+sudo systemctl daemon-reload
+# Habilitar el servicio para que se inicie automáticamente al arrancar el sistema
+sudo systemctl enable nginx
+# Iniciar el servicio de Nginx
+sudo systemctl start nginx
+sudo systemctl restart nginx
+echo "El servicio de Nginx ha sido creado y está en ejecución."
+
+# 2. INSTALL THE NGINX CONFIGURATION FILES
+mkdir /etc/nginx/sites-available
+mkdir /etc/nginx/sites-enabled
+sudo chmod 755 -R /var/www/html/
+sudo chown www-data:www-data -R /var/www/html/
+
+#backup conf
+echo 'hacemos una copia de nginx conf antes de poner la nueva'
+sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
+sudo mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.back
+sudo mv /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/default.back
 
 # Crear un nuevo archivo de configuración con todas las optimizacion de gzip para aumentar velocidad de carga
 sudo bash -c 'cat > /etc/nginx/nginx.conf << EOL
@@ -332,7 +415,6 @@ stream {
 EOL'
 echo 'config con exito'
 
-
 # Crear un nuevo archivo de configuración
 echo 'Crear un nuevo archivo de configuración nginx MEJORADO'
 sudo bash -c 'cat > /etc/nginx/sites-available/default.conf << EOL
@@ -394,30 +476,26 @@ sudo sed -i "s/server_name localhost.*/server_name localhost $IP 127.0.0.1;/" /e
 # Actualizar configuración de Nginx para phpmyadmin.conf
 sudo sed -i "s/server_name localhost.*/server_name localhost $IP 127.0.0.1;/" /etc/nginx/sites-available/phpmyadmin.conf
 
-
 # Descarga las listas de IPs de Cloudflare (IPv4 e IPv6) y concatena en un solo archivo
-curl -sL https://www.cloudflare.com/ips-v4/ https://www.cloudflare.com/ips-v6/ | cat > ipscloudflare.txt
+curl -sL https://www.cloudflare.com/ips-v4/ https://www.cloudflare.com/ips-v6/ | cat >ipscloudflare.txt
 
 # Ruta al archivo de inclusiones de Cloudflare
 cloudflare_inc_file="/etc/nginx/cloudflare.inc"
 
 # Genera el archivo de inclusiones de Cloudflare
-{ 
-  echo "# Cloudflare https://www.cloudflare.com/ips"
-  grep -E -o '([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}|([0-9a-fA-F]{1,4}:){3,7}[0-9a-fA-F]{1,4}/[0-9]{1,3}' ipscloudflare.txt | while read ip; do
-    echo "set_real_ip_from $ip;"
-  done
-  echo "real_ip_header CF-Connecting-IP;"
-} > "$cloudflare_inc_file"
+{
+    echo "# Cloudflare https://www.cloudflare.com/ips"
+    grep -E -o '([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}|([0-9a-fA-F]{1,4}:){3,7}[0-9a-fA-F]{1,4}/[0-9]{1,3}' ipscloudflare.txt | while read ip; do
+        echo "set_real_ip_from $ip;"
+    done
+    echo "real_ip_header CF-Connecting-IP;"
+} >"$cloudflare_inc_file"
 
 # Habilita IPv6 en Nginx
 sed -i 's/#\s*use\s*ipv6;/use\s*ipv6;/' /etc/nginx/nginx.conf
 
 # Mensaje de aviso
 echo "¡ATENCIÓN! Revisa el archivo $cloudflare_inc_file para confirmar que se han generado las IPs IPv4 e IPv6 correctamente."
-
-
-
 
 # Definir la ruta del archivo mimes.types
 mime_file="/etc/nginx/mime.types"
@@ -428,7 +506,7 @@ if [ -f "$mime_file" ]; then
 fi
 
 # Escribir el contenido en el archivo mimes.types
-cat << EOF > "$mime_file"
+cat <<EOF >"$mime_file"
 types {
     text/html                                        html htm shtml;
     text/css                                         css;
@@ -531,7 +609,6 @@ EOF
 # Imprimir un mensaje de éxito
 echo "Archivo mimes.types generado con éxito en $mime_file"
 
-
 sudo ufw allow 8081
 
 echo 'config con exito'
@@ -539,20 +616,16 @@ echo 'config con exito'
 # Reiniciar Nginx
 systemctl restart nginx && systemctl enable nginx
 
-
-
 #Composer Install
 sudo apt -y install -y curl php-cli php-mbstring git unzip
 cd ~ || exit
 curl -sS https://getcomposer.org/installer -o composer-setup.php
-HASH=`curl -sS https://composer.github.io/installer.sig`
+HASH=$(curl -sS https://composer.github.io/installer.sig)
 php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
 sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 #NPM install
 sudo apt -y install -y nodejs npm
-
-
 
 # 2. INSTALL THE DEPENDENCIES
 
@@ -574,7 +647,6 @@ sudo apt-get install -y libjasper-dev
 sudo apt-get install -y libopenexr-dev
 sudo apt-get install -y libgdal-dev
 
-
 # Video I/O:
 sudo apt-get install -y libdc1394-22-dev
 sudo apt-get install -y libavcodec-dev
@@ -589,7 +661,6 @@ sudo apt-get install -y libopencore-amrnb-dev
 sudo apt-get install -y libopencore-amrwb-dev
 sudo apt-get install -y libv4l-dev
 sudo apt-get install -y libxine2-dev
-
 
 # Parallelism and linear algebra libraries:
 sudo apt-get install -y libtbb-dev
@@ -613,20 +684,20 @@ sudo apt-get install -y doxygen
 sudo apt -y install whois
 
 #Necesarios OpenCV
-sudo apt -y  install build-essential 
-sudo apt -y  cmake pkg-config 
-sudo apt -y  libjpeg-dev 
-sudo apt -y  libpng-dev 
-sudo apt -y  libtiff-dev 
-sudo apt -y  libjasper-dev 
-sudo apt -y  libavcodec-dev 
-sudo apt -y  libavformat-dev 
-sudo apt -y  libswscale-dev 
-sudo apt -y  libgstreamer1.0-dev 
-sudo apt -y  libgstreamer-plugins-base1.0-dev 
-sudo apt -y  libv4l2-dev 
-sudo apt -y  python3-dev 
-sudo apt -y  python3-numpy
+sudo apt -y install build-essential
+sudo apt -y cmake pkg-config
+sudo apt -y libjpeg-dev
+sudo apt -y libpng-dev
+sudo apt -y libtiff-dev
+sudo apt -y libjasper-dev
+sudo apt -y libavcodec-dev
+sudo apt -y libavformat-dev
+sudo apt -y libswscale-dev
+sudo apt -y libgstreamer1.0-dev
+sudo apt -y libgstreamer-plugins-base1.0-dev
+sudo apt -y libv4l2-dev
+sudo apt -y python3-dev
+sudo apt -y python3-numpy
 
 sudo apt -y install libopencv-dev python3-opencv
 python3 -c "import cv2; print(cv2.__version__)"
@@ -722,19 +793,16 @@ sudo apt -y install libvdpau-dev
 sudo apt -y install libvdpau-va-gl1
 sudo apt -y install libvmaf-dev
 sudo apt -y install libwebp-dev
-sudo apt -y install libsnappy-dev	
+sudo apt -y install libsnappy-dev
 sudo apt -y install libcdio-dev
 sudo apt -y install git-all cmake cmake-curses-gui build-essential gcc-arm-linux-gnueabi g++-arm-linux-gnueabi yasmapt install cdparanoia
 sudo apt -y install cdparanoia
 sudo apt-get install -y libcdio-utils
 sudo apt -y install libcdparanoia-dev libcdparanoia0
 sudo apt -y install libcdio-paranoia libcdio-paranoia-dev
-sudo apt -y install ffmpeg
-
-
 
 # Instalar NASM
-sudo apt-get -y install nasm 
+sudo apt-get -y install nasm
 
 sudo apt -y install libx264-dev
 sudo apt -y install libx265-dev
@@ -743,7 +811,6 @@ sudo apt -y install libx265-dev
 sudo apt -y install openssl libssl-dev
 
 sudo apt -y install libsvtav1-dev
-
 
 # Save existing php package list to packages.txt file
 sudo dpkg -l | grep php | tee packages.txt
@@ -758,7 +825,6 @@ sudo add-apt-repository -y ppa:ondrej/php <<EOF
 
 EOF
 
-
 ## Remove old packages
 sudo apt -y remove --purge php*
 sudo apt -y purge php*
@@ -767,12 +833,11 @@ sudo apt -y autoremove --purge
 # Instalar curl y wget
 sudo apt -y install -y curl wget
 
-
 # Descargar la clave GPG para el repositorio de PHP
 sudo wget -qO /etc/apt/trusted.gpg.d/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
 
 # Agregar la clave de Zend
-curl -s https://repos.zend.com/zend.key | gpg --dearmor > /usr/share/keyrings/zend.gpg
+curl -s https://repos.zend.com/zend.key | gpg --dearmor >/usr/share/keyrings/zend.gpg
 
 # Añadir el repositorio de PHP a la lista de fuentes de paquetes
 echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
@@ -781,76 +846,75 @@ echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /et
 sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 
 # Añadir el repositorio de PHP a la lista de fuentes de paquetes de nuevo (también parece repetitivo, puede ser necesario sólo una vez)
-echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
+echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" >/etc/apt/sources.list.d/php.list
 
 # Crear una copia de seguridad del archivo sources.list
 cp /etc/apt/sources.list /etc/apt/sources.list.bak
 
 # Eliminar líneas duplicadas
 sed -i 'd/^\s*\#/g' /etc/apt/sources.list # Eliminar líneas de comentario
-sed -i 'd/\s*$/g' /etc/apt/sources.list # Eliminar líneas vacías
-sort /etc/apt/sources.list | uniq -d > /tmp/sources.list.uniq
+sed -i 'd/\s*$/g' /etc/apt/sources.list   # Eliminar líneas vacías
+sort /etc/apt/sources.list | uniq -d >/tmp/sources.list.uniq
 
 # Reemplazar el archivo sources.list con la versión depurada
 mv /tmp/sources.list.uniq /etc/apt/sources.list
 
 # Actualizar los paquetes
 sudo apt-get -y update
-sudo apt-get -y upgrade       # Uncomment this line to install the newest versions of all packages currently installed
+sudo apt-get -y upgrade # Uncomment this line to install the newest versions of all packages currently installed
 # sudo apt-get -y dist-upgrade  # Uncomment this line to, in addition to 'upgrade', handles changing dependencies with new versions of packages
-sudo apt-get -y autoremove    # Uncomment this line to remove packages that are now no longer needed
+sudo apt-get -y autoremove # Uncomment this line to remove packages that are now no longer needed
 systemctl daemon-reload
 
 # Instalar PHP y las extensiones necesarias
-sudo apt -y install php8.3-phar 
-sudo apt -y install php8.3-common 
-sudo apt -y install php8.3 
-sudo apt -y install php8.3-fpm 
-sudo apt -y install php8.3-mysql 
-sudo apt -y install php8.3-curl 
-sudo apt -y install php8.3-gd 
-sudo apt -y install php8.3-imagick 
-sudo apt -y install php8.3-intl 
-sudo apt -y install php8.3-mysql 
-sudo apt -y install php8.3-mbstring 
-sudo apt -y install php8.3-xml 
-sudo apt -y install php8.3-mcrypt 
+sudo apt -y install php8.3-phar
+sudo apt -y install php8.3-common
+sudo apt -y install php8.3
+sudo apt -y install php8.3-fpm
+sudo apt -y install php8.3-mysql
+sudo apt -y install php8.3-curl
+sudo apt -y install php8.3-gd
+sudo apt -y install php8.3-imagick
+sudo apt -y install php8.3-intl
+sudo apt -y install php8.3-mysql
+sudo apt -y install php8.3-mbstring
+sudo apt -y install php8.3-xml
+sudo apt -y install php8.3-mcrypt
 sudo apt -y install php-mcrypt
-sudo apt -y install php8.3-zip 
+sudo apt -y install php8.3-zip
 sudo apt -y install php8.3-ldap
-sudo apt -y install php8.3-sybase 
-sudo apt -y install php8.3-opcache 
-sudo apt -y install php8.3-pgsql 
-sudo apt -y install php8.3-redis 
-sudo apt -y install php8.3-common 
-sudo apt -y install php8.3 
-sudo apt -y install php8.3-cli 
-sudo apt -y install php8.3-curl 
-sudo apt -y install php8.3-bz2 
-sudo apt -y install php8.3-xml 
-sudo apt -y install php8.3-mysql 
-sudo apt -y install php8.3-gd 
-sudo apt -y install php8.3-imagick 
-sudo apt -y install php-bz2 
-sudo apt -y install php8.3-mbstring 
-sudo apt -y install php8.3-intl 
-sudo apt -y install php8.3-opcache 
-sudo apt -y install php8.3-curl 
-sudo apt -y install php-curl 
-sudo apt -y install php-zip 
-sudo apt -y install php8.3-zip 
-sudo apt -y install php-ssh2 
-sudo apt -y install php8.3-ssh2 
-sudo apt -y install php-xmlrpc 
-sudo apt -y install php-xml 
-sudo apt -y install php-curl 
-sudo apt -y install php-mbstring 
-sudo apt -y install php8.3-fpm  
+sudo apt -y install php8.3-sybase
+sudo apt -y install php8.3-opcache
+sudo apt -y install php8.3-pgsql
+sudo apt -y install php8.3-redis
+sudo apt -y install php8.3-common
+sudo apt -y install php8.3
+sudo apt -y install php8.3-cli
+sudo apt -y install php8.3-curl
+sudo apt -y install php8.3-bz2
+sudo apt -y install php8.3-xml
+sudo apt -y install php8.3-mysql
+sudo apt -y install php8.3-gd
+sudo apt -y install php8.3-imagick
+sudo apt -y install php-bz2
+sudo apt -y install php8.3-mbstring
+sudo apt -y install php8.3-intl
+sudo apt -y install php8.3-opcache
+sudo apt -y install php8.3-curl
+sudo apt -y install php-curl
+sudo apt -y install php-zip
+sudo apt -y install php8.3-zip
+sudo apt -y install php-ssh2
+sudo apt -y install php8.3-ssh2
+sudo apt -y install php-xmlrpc
+sudo apt -y install php-xml
+sudo apt -y install php-curl
+sudo apt -y install php-mbstring
+sudo apt -y install php8.3-fpm
 sudo apt -y install php8.3-curl
 
-sudo systemctl restart php8.3-fpm 
+sudo systemctl restart php8.3-fpm
 sudo systemctl enable php8.3-fpm
-
 
 sudo a2disconf php*-fpm
 # On Apache: Enable PHP 8.3 FPM
@@ -861,7 +925,6 @@ sudo apt-get install php8.3-pear
 sudo pecl channel-update pecl.php.net
 
 sudo systemctl restart php8.3-fpm && sudo systemctl enable php8.3-fpm
-
 
 sudo pear config-set php_bin /usr/bin/php8.3
 
@@ -875,9 +938,9 @@ sudo pecl install pdo_mysql
 sudo pecl install pdo_pgsql
 sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
 
-sudo curl https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list
-sudo curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
-sudo curl https://packages.microsoft.com/config/debian/9/prod.list > /etc/apt/sources.list.d/mssql-release.list
+sudo curl https://packages.microsoft.com/config/debian/12/prod.list >/etc/apt/sources.list.d/mssql-release.list
+sudo curl https://packages.microsoft.com/config/debian/11/prod.list >/etc/apt/sources.list.d/mssql-release.list
+sudo curl https://packages.microsoft.com/config/debian/9/prod.list >/etc/apt/sources.list.d/mssql-release.list
 
 # Instalar las herramientas de Microsoft SQL
 sudo apt-get -y install msodbcsql17
@@ -890,12 +953,12 @@ sudo pecl install pdo_sqlsrv
 sudo pecl install sqlsrv
 
 # Habilitar las extensiones PHP para Microsoft SQL
-echo "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.3/mods-available/sqlsrv.ini
-echo "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.3/mods-available/pdo_sqlsrv.ini
+echo "; priority=20\nextension=sqlsrv.so\n" >/etc/php/8.3/mods-available/sqlsrv.ini
+echo "; priority=30\nextension=pdo_sqlsrv.so\n" >/etc/php/8.3/mods-available/pdo_sqlsrv.ini
 sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
 
-sudo apt -y install gcc 
-sudo apt -y install -y g++ 
+sudo apt -y install gcc
+sudo apt -y install -y g++
 sudo apt -y install -y make
 
 sudo apt -y install curl gnupg2 ca-certificates lsb-release debian-archive-keyring
@@ -903,7 +966,6 @@ sudo apt -y install curl gnupg2 ca-certificates lsb-release ubuntu-keyring
 #Esta nueva version anade estos dos parametros directamente en la instalcion por ser repo de microsoft
 #echo "extension=sqlsrv" | sudo tee -a /etc/php/8.3/cli/php.ini
 #echo "extension=pdo_sqlsrv" | sudo tee -a /etc/php/8.3/cli/php.ini
-
 
 # Reiniciar Nginx
 systemctl restart nginx
@@ -915,7 +977,6 @@ echo "pm.min_spare_servers = 50" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
 echo "pm.max_spare_servers = 200" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
 echo "process.priority = -19" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
 echo "php_value[memory_limit] = 512M" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-
 
 # Añade las líneas al archivo php.ini
 echo "memory_limit=4096M" | sudo tee -a /etc/php/8.3/cli/php.ini
@@ -939,9 +1000,8 @@ echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.3/cli/php.ini
 sudo service php8.3-fpm restart
 sudo systemctl restart nginx
 
-
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&\
-sudo apt-get install -y nodejs
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&
+    sudo apt-get install -y nodejs
 
 # Descargar e instalar NVM
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
@@ -949,7 +1009,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 # Recargar la configuración de Bash
 source ~/.bashrc
 
-nvm list-remote 
+nvm list-remote
 # Instalar la versión LTS más reciente de Node.js
 nvm install --lts # pones 22 si quieres instalar 22 en lugar de --lts versión LTS más reciente
 
@@ -957,210 +1017,42 @@ nvm use 'lts/*' # pones 22 si quieres instalar 22 en lugar de --lts：
 # Establecer la versión LTS recién instalada como la predeterminada
 nvm alias default 'lts/*'
 
-
-
 #INSTALL FFMPEG SOLO SI ES INSTALL
 
 if [ "$ffmpeg" = "install" ]; then
+sudo apt update
+sudo apt install snapd
+sudo snap install core
+
+
     echo "Instalando ffmpeg.."
+    sudosnap install --edge ffmpeg
 
-    # Install ffmpeg
-    rm -rf ~/ffmpeg_sources
-
-    # Crear directorios para el código fuente y los binarios
-    mkdir -p ~/ffmpeg_sources ~/bin ~/ffmpeg_build
-
-    # Clonar el repositorio de fdk-aac
-    git clone https://github.com/mstorsjo/fdk-aac && \
-    cd fdk-aac && \
-    autoreconf -fiv && \
-    ./configure --enable-shared && \
-    make -j$(nproc) && \
-    sudo make install && sudo ldconfig
-
-
-    # Compilar e instalar libx264
-    echo "instalar libx264"
-
-    cd ~/ffmpeg_sources && git -C x264 pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/x264.git && cd x264 && PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin" --enable-static --enable-pic && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-
-    # Compilar e instalar libx265
-    echo "instalar libx265"
-
-    cd ~/ffmpeg_sources && git -C x265_git pull 2> /dev/null || git clone https://bitbucket.org/multicoreware/x265_git && cd ~/ffmpeg_sources/x265_git/build/linux && cd ~/ffmpeg_sources/x265_git/build/linux/ && chmod 775 multilib.sh && ./multilib.sh
-
-    # Compilar e instalar libvpx
-    echo "instalar libvpx"
-
-    cd ~/ffmpeg_sources && git -C libvpx pull 2> /dev/null || git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git && cd libvpx && PATH="$HOME/bin:$PATH" ./configure --prefix="$HOME/ffmpeg_build" --disable-examples --disable-unit-tests --enable-vp9-highbitdepth --as=yasm && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libfdk-aac
-    echo "libfdk-aac"
-
-    cd ~/ffmpeg_sources && git -C fdk-aac pull 2> /dev/null || git clone --depth 1 https://github.com/mstorsjo/fdk-aac && cd fdk-aac && autoreconf -fiv && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libopus
-    echo "instalar libopus"
-
-    cd ~/ffmpeg_sources && git -C opus pull 2> /dev/null || git clone --depth 1 https://github.com/xiph/opus.git && cd opus && ./autogen.sh && ./configure --prefix="$HOME/ffmpeg_build" --disable-shared && make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libaom
-    echo "instalar libaom"
-
-    cd ~/ffmpeg_sources && git -C aom pull 2> /dev/null || git clone --depth 1 https://aomedia.googlesource.com/aom && mkdir -p aom_build && cd aom_build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_TESTS=OFF -DENABLE_NASM=on ../aom && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libsvtav1
-    echo "libsvtav1"
-
-    cd ~/ffmpeg_sources && git -C SVT-AV1 pull 2> /dev/null || git clone https://gitlab.com/AOMediaCodec/SVT-AV1.git && mkdir -p SVT-AV1/build && cd SVT-AV1/build && PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DCMAKE_BUILD_TYPE=Release -DBUILD_DEC=OFF -DBUILD_SHARED_LIBS=OFF .. && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install
-
-    # Compilar e instalar libdav1d
-    echo "libdav1d"
-
-    cd ~/ffmpeg_sources && git -C dav1d pull 2> /dev/null || git clone --depth 1 https://code.videolan.org/videolan/dav1d.git && mkdir -p dav1d/build && cd dav1d/build && meson setup -Denable_tools=false -Denable_tests=false --default-library=static .. --prefix "$HOME/ffmpeg_build" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
-
-    # Compilar e instalar libvmaf
-    echo "instalar libvmaf"
-    cd ~/ffmpeg_sources && wget https://github.com/Netflix/vmaf/archive/v2.1.1.tar.gz && tar xvf v2.1.1.tar.gz && mkdir -p vmaf-2.1.1/libvmaf/build && cd vmaf-2.1.1/libvmaf/build && meson setup -Denable_tests=false -Denable_docs=false --buildtype=release --default-library=static .. --prefix "$HOME/ffmpeg_build" --bindir="$HOME/ffmpeg_build/bin" --libdir="$HOME/ffmpeg_build/lib" && ninja -j$(nproc) && ninja -j$(nproc) install
-
-
-    git clone --depth=1 https://gitlab.com/AOMediaCodec/SVT-AV1.git
-    cd SVT-AV1
-    cd Build
-    cmake .. -G"Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
-    make -j $(nproc)
-    sudo make install
-
-
-    # Compilar e instalar libx265
-    sudo apt-get install libnuma-dev && \
-    cd ~/ffmpeg_sources && \
-    git -C x265_git pull 2> /dev/null || git clone --depth 1 https://bitbucket.org/multicoreware/x265_git -b stable && \
-    cd x265_git/build/linux && \
-    PATH="$HOME/bin:$PATH" cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$HOME/ffmpeg_build" -DENABLE_SHARED=off ../../source && \
-    PATH="$HOME/bin:$PATH"  make -j $(nproc) && \
-    make install
-
-
-    echo "clonamos ffmpeg"
-    cd ~/ffmpeg_sources
-    git clone https://github.com/FFmpeg/FFmpeg.git
-    mv FFmpeg ffmpeg
-    cd ffmpeg
-
-
-    # Corregir la versión de FFmpeg
-    touch VERSION
-
-    echo "7.0.git">RELEASE && cp VERSION VERSION.bak && echo -e "$(cat VERSION.bak) [$(date +%Y-%m-%d)] [$(cat RELEASE)] " > VERSION
-
-    echo "pasamos a compilar"
-
-    # Compilar e instalar FFmpeg
-    PATH="$HOME/bin:$PATH" PKG_CONFIG_PATH="$HOME/ffmpeg_build/lib/pkgconfig" ./configure \
-    --prefix="$HOME/ffmpeg_build" \
-    --pkg-config-flags="--static" \
-    --extra-cflags="-I$HOME/ffmpeg_build/include" \
-    --extra-ldflags="-L$HOME/ffmpeg_build/lib" \
-    --extra-libs="-lpthread -lm" \
-    --ld="g++" \
-    --bindir="$HOME/bin" \
-    --enable-gpl \
-    --enable-openssl \
-    --enable-libaom \
-    --enable-libass \
-    --enable-libfdk-aac \
-    --enable-libfreetype \
-    --enable-libmp3lame \
-    --enable-libopus \
-    --enable-libsvtav1 \
-    --enable-libdav1d \
-    --enable-libvorbis \
-    --enable-libvpx \
-    --enable-libx264 \
-    --enable-libx265 \
-    --enable-nonfree \
-    --enable-libopenjpeg \
-    --enable-libpulse \
-    --enable-chromaprint \
-    --enable-frei0r \
-    --enable-libbluray \
-    --enable-libbs2b \
-    --enable-librubberband \
-    --enable-libspeex \
-    --enable-libtheora \
-    --enable-libfontconfig \
-    --enable-libfribidi \
-    --enable-libxml2 \
-    --enable-libxvid \
-    --enable-version3 \
-    --enable-libvidstab \
-    --enable-libcaca \
-    --enable-libopenmpt \
-    --enable-libgme \
-    --enable-opengl \
-    --enable-libsnappy \
-    --enable-libshine \
-    --enable-libtwolame \
-    --enable-libvo-amrwbenc \
-    --enable-libflite \
-    --enable-libsoxr \
-    --enable-ladspa \
-    && PATH="$HOME/bin:$PATH" make -j$(nproc) && make -j$(nproc) install && hash -r
-
-
-    source ~/.profile
-
-
-    export PATH="$HOME/bin:$PATH"
-
-
-    echo "Instalación completada con éxito."
-
-    # final ffmpeg install
 
 fi
 
-
 # install opencv
 if [ "$opencv" = "install" ]; then
-    echo "Instalando opencv.."
-    # VERSION TO BE INSTALLED
-
-    OPENCV_VERSION='4.9.0'
-
-
-
-    # 3. INSTALL THE LIBRARY
-
-    sudo apt-get install -y unzip wget zip
-    wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
-    unzip ${OPENCV_VERSION}.zip
-    rm ${OPENCV_VERSION}.zip
-    mv opencv-${OPENCV_VERSION} OpenCV
-    cd OpenCV
-    mkdir build
-    cd build
-    cmake -DWITH_QT=ON -DWITH_OPENGL=ON -DFORCE_VTK=ON -DWITH_TBB=ON -DWITH_GDAL=ON -DWITH_XINE=ON -DBUILD_EXAMPLES=ON -DENABLE_PRECOMPILED_HEADERS=OFF ..
-    make -j$(nproc)
-    sudo make install
-    sudo ldconfig
+    echo "Instalando opencv.."sudo apt install python3 -y
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python3 get-pip.py
+pip3 install opencv-contrib-python
 
 
     # final opencv
 
 fi
 
-
 # Install tensorflow
 if [ "$TensorFlow" = "install" ]; then
-            echo "Instalando tensorflow.."
+    echo "Instalando tensorflow.."
 
-        # Obtener la arquitectura de la CPU
-        ARCH=$(uname -m)
+pip install --upgrade pip setuptools wheel
 
-        if [ "$ARCH" = "x86_64" ]; then
+    # Obtener la arquitectura de la CPU
+    ARCH=$(uname -m)
+
+    if [ "$ARCH" = "x86_64" ]; then
         echo "**Instalando TensorFlow para x86_64**"
 
         # Instalar Python 3 y pip
@@ -1168,14 +1060,14 @@ if [ "$TensorFlow" = "install" ]; then
         sudo apt -y install -y python3 python3-pip python3-venv
 
         # Instalar TensorFlow con soporte para GPU
-        python3 -m pip install tensorflow[and-cuda]
+        pip install --upgrade pip
+        pip install tensorflow
 
         # Verificar la instalación de TensorFlow
         python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
         pip install tensorflow --break-system-packages
-        
 
-        elif [ "$ARCH" = "aarch64" ]; then
+    elif [ "$ARCH" = "aarch64" ]; then
         echo "**Instalando TensorFlow para aarch64**"
 
         # Instalar Python 3 y pip
@@ -1187,31 +1079,28 @@ if [ "$TensorFlow" = "install" ]; then
         source tf_env/bin/activate
 
         # Instalar TensorFlow optimizado para ARM
+        python3 -m pip install tensorflow[and-cuda]
         pip install tensorflow-cpu-aws
 
         # Verificar la instalación de TensorFlow
         python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('CPU'))"
 
-        else
+    else
         echo "**Arquitectura de CPU no compatible: $ARCH**"
         echo "Este script solo funciona en sistemas x86_64 o aarch64."
         exit 1
-        fi
+    fi
 
-        echo "**TensorFlow instalado correctamente para $ARCH**"
+    echo "**TensorFlow instalado correctamente para $ARCH**"
 
-        # Salir del entorno virtual (si se creó para aarch64)
-        if [ "$ARCH" = "aarch64" ]; then
+    # Salir del entorno virtual (si se creó para aarch64)
+    if [ "$ARCH" = "aarch64" ]; then
         deactivate
-        fi
+    fi
 
-        # Final install tensorflow
+    # Final install tensorflow
 
 fi
-
-
-
-
 
 echo 'Pasamos a Mariadb'
 if [ "$DB" = "none" ]; then
@@ -1219,67 +1108,24 @@ if [ "$DB" = "none" ]; then
 elif [ "$DB" != "" ]; then
     echo "Instalar MariaDB y crear tabla appnetd_cloud"
 
-if [ -z "$MARIADBPASSWORD" ]; then
-    MARIADBPASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12 ; echo '')
-fi
+    if [ -z "$MARIADBPASSWORD" ]; then
+        MARIADBPASSWORD=$(
+            head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12
+            echo ''
+        )
+    fi
 
-echo "creo mysql carpeta"
-	sudo mkdir /etc/mysql
-	sudo chmod 755 /etc/mysql
+    curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash
 
-	# Actualiza los paquetes del sistema
-	sudo apt-key adv --fetch-keys 'https://mariadb.org/mariadb_release_signing_key.asc'
-	sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://mirror.23media.com/mariadb/repo/11.3/ubuntu jammy main'<<EOF
+    # Update package lists
+    sudo apt-get update -y
 
-EOF
-#!/bin/bash
+    echo "Instalo mariadb"
 
-# Install dependencies
-sudo apt-get install apt-transport-https curl -y
-
-# Create keyring directory
-sudo mkdir -p /etc/apt/keyrings
-
-# Import MariaDB GPG key
-sudo curl -o /etc/apt/keyrings/mariadb-keyring.pgp 'https://mariadb.org/mariadb_release_signing_key.pgp'
-
-# Add MariaDB repository to sources list (Default format)
-echo "# MariaDB 11.3 repository list - created $(date +'%Y-%m-%d %H:%M UTC')
-# https://mariadb.org/download/
-X-Repolib-Name: MariaDB
-Types: deb
-# deb.mariadb.org is a dynamic mirror if your preferred mirror goes offline. See https://mariadb.org/mirrorbits/ for details.
-# URIs: https://deb.mariadb.org/11.3/debian
-URIs: https://mirrors.ptisp.pt/mariadb/repo/11.3/debian
-Suites: bookworm
-Components: main
-Signed-By: /etc/apt/keyrings/mariadb-keyring.pgp" | sudo tee /etc/apt/sources.list.d/mariadb.sources
-
-# -----------------------------------------------------
-# Optional: Instructions for users needing source packages
-echo "# If you need source packages, add the following line to /etc/apt/sources.list.d/mariadb.sources:"
-echo "# Types: deb deb-src" 
-echo "# Then install dpkg-dev and get the source with: apt-get source mariadb-server"
-
-# -----------------------------------------------------
-# Optional: Legacy one-line-style format 
-echo "# If you prefer the legacy APT format, create /etc/apt/sources.list.d/mariadb.list with:"
-echo "# deb [signed-by=/etc/apt/keyrings/mariadb-keyring.pgp] https://mirrors.ptisp.pt/mariadb/repo/11.3/debian bookworm main"
-
-# -----------------------------------------------------
-
-# Update package lists 
-sudo apt-get update -y
-
-# Update package lists 
-sudo apt-get update -y
-
-echo "Instalo mariadb"
-
-	sudo apt-get -y install mariadb-server mariadb-client
-echo "ejecuto secure"
-# Ejecuta el script de seguridad de MySQL
-sudo mysql_secure_installation <<EOF
+    sudo apt-get -y install mariadb-server mariadb-client
+    echo "ejecuto secure"
+    # Ejecuta el script de seguridad de MySQL
+    sudo mysql_secure_installation <<EOF
 
 y
 y
@@ -1291,44 +1137,44 @@ y
 y
 EOF
 
-echo " MAriadb Instalado, paro a la config"
-	# Inicia el servidor MariaDB
-	sudo systemctl stop mariadb
-	sudo systemctl start mariadb
-	sudo systemctl enable mariadb
+    echo " MAriadb Instalado, paro a la config"
+    # Inicia el servidor MariaDB
+    sudo systemctl stop mariadb
+    sudo systemctl start mariadb
+    sudo systemctl enable mariadb
 
-	# Crea la base de datos 
-	echo "CREATE DATABASE ${DB};" | mysql -uroot -p"${MARIADBPASSWORD}"
+    # Crea la base de datos
+    echo "CREATE DATABASE ${DB};" | mysql -uroot -p"${MARIADBPASSWORD}"
 
+    # Define tu contraseña
 
-	# Define tu contraseña
+    echo "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MARIADBPASSWORD}';" | mysql -uroot -p"${MARIADBPASSWORD}"
 
-echo "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MARIADBPASSWORD}';" | mysql -uroot -p"${MARIADBPASSWORD}"
+    # Generar usuario y contraseña aleatorios
+    NEW_USERNAME="usuario$(date +%s)"
+    NEW_PASSWORD=$(
+        head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12
+        echo ''
+    )
 
-# Generar usuario y contraseña aleatorios
-NEW_USERNAME="usuario$(date +%s)"
-NEW_PASSWORD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 12 ; echo '')
+    # Asignar usuario y contraseña a la base de datos
+    echo "CREATE USER '${NEW_USERNAME}'@'localhost' IDENTIFIED BY '${NEW_PASSWORD}';" | mysql -uroot -p"${MARIADBPASSWORD}" "${DB}"
+    echo "GRANT ALL PRIVILEGES ON ${DB}.* TO '${NEW_USERNAME}'@'localhost';" | mysql -uroot -p"${MARIADBPASSWORD}" "${DB}"
 
-# Asignar usuario y contraseña a la base de datos
-echo "CREATE USER '${NEW_USERNAME}'@'localhost' IDENTIFIED BY '${NEW_PASSWORD}';" | mysql -uroot -p"${MARIADBPASSWORD}" "${DB}"
-echo "GRANT ALL PRIVILEGES ON ${DB}.* TO '${NEW_USERNAME}'@'localhost';" | mysql -uroot -p"${MARIADBPASSWORD}" "${DB}"
+    # Mostrar usuario y contraseña generados
+    echo "Usuario: ${NEW_USERNAME}"
+    echo "Contraseña: ${NEW_PASSWORD}"
 
-# Mostrar usuario y contraseña generados
-echo "Usuario: ${NEW_USERNAME}"
-echo "Contraseña: ${NEW_PASSWORD}"
+    # # Iniciar sesión en MySQL/MariaDB como root y ejecutar el comando SQL
+    # mysql -u root -p$ROOT_PASSWORD -e "CREATE DATABASE $DB_NAME; GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost'; FLUSH PRIVILEGES;"
 
+    # Hacemos una copia de seguridad del archivo original
+    sudo cp /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf.backup
 
-# # Iniciar sesión en MySQL/MariaDB como root y ejecutar el comando SQL
-# mysql -u root -p$ROOT_PASSWORD -e "CREATE DATABASE $DB_NAME; GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost'; FLUSH PRIVILEGES;"
-		
-	
-	# Hacemos una copia de seguridad del archivo original
-	sudo cp /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf.backup
+    RAM=$(awk '/MemTotal/ {printf("%.0f\n", $2/1024/1024*0.8)}' /proc/meminfo)
 
-RAM=$(awk '/MemTotal/ {printf("%.0f\n", $2/1024/1024*0.8)}' /proc/meminfo)
-
-# Añadimos las nuevas configuraciones al archivo
-sudo bash -c "cat >> /etc/mysql/mariadb.conf.d/50-server.cnf" <<EOF
+    # Añadimos las nuevas configuraciones al archivo
+    sudo bash -c "cat >> /etc/mysql/mariadb.conf.d/50-server.cnf" <<EOF
 
 bind-address = 0.0.0.0
 [mysqld]
@@ -1354,15 +1200,13 @@ thread_cache_size = 100  # Aumentado para cachear más hilos
 expire_logs_days = 10
 EOF
 
-
-	# Reiniciamos el servicio para que los cambios tengan efecto
-	sudo systemctl restart mariadb
+    # Reiniciamos el servicio para que los cambios tengan efecto
+    sudo systemctl restart mariadb
 
 else
     echo "Por favor especifica 'none' o 'appnetd_cloud' como argumento al ejecutar este script. Ejemplo: sh install.sh apache none o uma o sh install.sh nginx none o uma"
     exit 1
 fi
-
 
 #redis
 sudo apt -y install redis-server
@@ -1371,11 +1215,11 @@ echo "Redis Instalado, paro a la config"
 echo "Instalando appnetd_cloud y limpiar antes de empezar"
 cd /var/www/ || exit
 echo "he pasado a carpeta /var/www"
-echo "limpiando carpeta html" 
+echo "limpiando carpeta html"
 #Comprobar si el directorio existe
 if [ -d "/var/www/html/" ]; then
     # Si el directorio existe, cambiar a él y eliminar su contenido
-    cd /var/www/|| exit
+    cd /var/www/ || exit
     rm -rf html/*
 else
     # Si el directorio no existe, salir del script
@@ -1386,26 +1230,26 @@ echo "he limpiado carpeta html"
 echo "instalor ftp y sftp"
 #Installar servidor ftp y sftp
 if [ "$FTP" = "install" ]; then
-	    # Función para generar una contraseña segura
-        echo "Función para generar una contraseña segura"
-	generate_FTP_PASSWORD() {
-	  openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 16
-	}
-	
-	# Generar nombre de usuario y contraseña aleatorios
-	FTP_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
-	FTP_PASSWORD=$(generate_FTP_PASSWORD)
-	FTP_DIR=/var/www/ftp
+    # Función para generar una contraseña segura
+    echo "Función para generar una contraseña segura"
+    generate_FTP_PASSWORD() {
+        openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 16
+    }
+
+    # Generar nombre de usuario y contraseña aleatorios
+    FTP_USER=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
+    FTP_PASSWORD=$(generate_FTP_PASSWORD)
+    FTP_DIR=/var/www/ftp
     echo "FTP_USER: $FTP_USER"
     echo "FTP_PASSWORD: $FTP_PASSWORD"
     echo "FTP_DIR: $FTP_DIR"
     echo "FTP_USER: $FTP_USER"
     echo "FTP_PASSWORD: $FTP_PASSWORD"
-	# Actualizar e instalar paquetes necesarios
-	sudo apt -y install -y proftpd
-	echo "Configuro config ftp"
-	# Configurar ProFTPD
-	cp /etc/proftpd/proftpd.conf /etc/proftpd/proftpd.conf.backup
+    # Actualizar e instalar paquetes necesarios
+    sudo apt -y install -y proftpd
+    echo "Configuro config ftp"
+    # Configurar ProFTPD
+    cp /etc/proftpd/proftpd.conf /etc/proftpd/proftpd.conf.backup
     sed -i 's/^DefaultRoot .*/DefaultRoot ~/g' /etc/proftpd/proftpd.conf
     sed -i 's/^# DefaultRoot .*/DefaultRoot ~/g' /etc/proftpd/proftpd.conf
     sed -i 's/^RequireValidShell.*/RequireValidShell off/g' /etc/proftpd/proftpd.conf
@@ -1413,28 +1257,27 @@ if [ "$FTP" = "install" ]; then
     sed -i 's/^PassivePorts.*/PassivePorts 50000 50010/g' /etc/proftpd/proftpd.conf
     sed -i 's/^# PassivePorts.*/PassivePorts 50000 50010/g' /etc/proftpd/proftpd.conf
 
-	
-	echo "paso a directorio y usuario"
+    echo "paso a directorio y usuario"
 
-	    # Crear el directorio FTP si no existe
-	    sudo mkdir -p "$FTP_DIR"
-	    echo "Directorio $FTP_DIR creado."
+    # Crear el directorio FTP si no existe
+    sudo mkdir -p "$FTP_DIR"
+    echo "Directorio $FTP_DIR creado."
 
-	    # Crear el usuario sin crear el directorio de inicio si ya existe
-	    sudo useradd -M -d $FTP_DIR -s /bin/bash $FTP_USER
-	    # Establecer la contraseña del usuario utilizando chpasswd
-	    echo "$FTP_USER:$FTP_PASSWORD" | sudo chpasswd
-	    # Agregar al usuario al grupo propietario del directorio
-	    sudo usermod -aG $(stat -c '%G' $FTP_DIR) $FTP_USER
-	    # Otorgar permisos de lectura, escritura y ejecución al directorio y a todos los archivos dentro de él
-	    sudo chmod -R 777 $FTP_DIR
-	echo "FTP instalado lo reiniciare"
-	# Reiniciar ProFTPD
-	sudo systemctl restart proftpd
+    # Crear el usuario sin crear el directorio de inicio si ya existe
+    sudo useradd -M -d $FTP_DIR -s /bin/bash $FTP_USER
+    # Establecer la contraseña del usuario utilizando chpasswd
+    echo "$FTP_USER:$FTP_PASSWORD" | sudo chpasswd
+    # Agregar al usuario al grupo propietario del directorio
+    sudo usermod -aG $(stat -c '%G' $FTP_DIR) $FTP_USER
+    # Otorgar permisos de lectura, escritura y ejecución al directorio y a todos los archivos dentro de él
+    sudo chmod -R 777 $FTP_DIR
+    echo "FTP instalado lo reiniciare"
+    # Reiniciar ProFTPD
+    sudo systemctl restart proftpd
 
     echo "He terminado con FTP"
 
-    FTP_HOST='localhost'   
+    FTP_HOST='localhost'
     FTP_ROOT='/var/www/ftp/'
     FTP_PORT=21
     FTP_PASSIVE=true
@@ -1442,29 +1285,27 @@ if [ "$FTP" = "install" ]; then
 
 fi
 
+sudo systemctl stop ufw
+sudo systemctl disable ufw
+sudo apt -y purge ufw
+sudo systemctl stop firewalld
+sudo systemctl disable firewalld
+sudo apt remove ufw -y
+sudo apt autoremove -y
+sudo apt remove firewalld
+sudo apt autoremove -y
+sudo apt -y purge firewalld
 
-
-    sudo systemctl stop ufw
-    sudo systemctl disable ufw
-    sudo apt -y purge ufw
-    sudo systemctl stop firewalld
-    sudo systemctl disable firewalld
-    sudo apt remove ufw -y
-    sudo apt autoremove -y
-    sudo apt remove firewalld
-    sudo apt autoremove -y
-    sudo apt -y purge firewalld
-
-    cd /root/
-    wget https://download.configserver.com/csf.tgz
-    tar -xzf csf.tgz
-    cd csf
-    sudo ./install.sh
-    sudo sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
-    systemctl start csf
-    systemctl enable csf
-    sudo csf -x
-    sudo csf -e
+cd /root/
+wget https://download.configserver.com/csf.tgz
+tar -xzf csf.tgz
+cd csf
+sudo ./install.sh
+sudo sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
+systemctl start csf
+systemctl enable csf
+sudo csf -x
+sudo csf -e
 
 sudo apt-get install fail2ban -y
 sudo apt-get install clamav clamav-daemon -y
@@ -1477,7 +1318,6 @@ sudo systemctl start openssh
 sudo systemctl enable openssh
 sudo apt -y install bridge-utils
 
-
 # descargar de git
 echo "Instalando appnetd_cloud si no es none"
 
@@ -1486,108 +1326,98 @@ if [ "$INSTALL" = "none" ]; then
 elif [ "$INSTALL" != "" ]; then
     echo 'Instalando appnetd_cloud y limpiar antes de empezar'
 
-cd /var/www/ || exit
-mkdir phpmyadmin
+    cd /var/www/ || exit
+    mkdir phpmyadmin
 
-	
-	sudo apt -y install -y wget zip
-	wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
-	sudo unzip phpMyAdmin-5.2.1-all-languages.zip
-	mv phpMyAdmin-5.2.1-all-languages/* phpmyadmin
+    sudo apt -y install -y wget zip
+    wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
+    sudo unzip phpMyAdmin-5.2.1-all-languages.zip
+    mv phpMyAdmin-5.2.1-all-languages/* phpmyadmin
 
+    mkdir /var/www/html/
+    cd /var/www/html/ || exit
 
-	mkdir /var/www/html/
-	cd /var/www/html/ || exit
+    echo 'clonar proyecto desde git'
+    git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Gestion-v3.1.git /var/www/html >/var/www/log.txt 2>&1
+    echo 'instalar .env'
+    cp .env.example .env
+    # Ruta del archivo .env
+    ENV_FILE=".env"
 
+    # Generar el token de localhost monitor list
+    TOKENHOST=$(openssl rand -hex 32)
 
+    # 1. Descargar el archivo de servicio systemd (usando curl)
+    curl -L -s "https://appnet.dev/empleado/generador-linux-service.php" >/etc/systemd/system/appnetmonitor.service
+    chmod 777 /etc/systemd/system/appnetmonitor.service
 
+    # 2 Descargar el script de monitoreo (usando curl)
+    curl -L -s "https://appnet.dev/empleado/generar-linux-sh.php?token=$TOKENHOST&link=$IP" >/root/appnetdev-monitor.sh
+    chmod 777 /root/appnetdev-monitor.sh
 
-	echo 'clonar proyecto desde git'
-		git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Gestion-v3.1.git /var/www/html > /var/www/log.txt 2>&1
-	echo 'instalar .env'
-	cp .env.example .env
-	# Ruta del archivo .env
-	ENV_FILE=".env"
+    # 3 Recargar configuración de systemd, habilitar y iniciar el servicio
+    sudo systemctl daemon-reload
+    sudo systemctl enable appnetmonitor
+    sudo systemctl start appnetmonitor
 
+    # Reemplazar el valor del token en el seeder
+    sed -i "s/\['token'\] =>.*/\['token'\] => '$TOKENHOST',/" database/seeders/HostListSeeder.php
+    sudo apt -y install bc
 
-	    # Generar el token de localhost monitor list
-TOKENHOST=$(openssl rand -hex 32)
-
-# 1. Descargar el archivo de servicio systemd (usando curl)
-curl -L -s "https://appnet.dev/empleado/generador-linux-service.php" > /etc/systemd/system/appnetmonitor.service
-chmod 777 /etc/systemd/system/appnetmonitor.service
-
-# 2 Descargar el script de monitoreo (usando curl)
-curl -L -s "https://appnet.dev/empleado/generar-linux-sh.php?token=$TOKENHOST&link=$IP" > /root/appnetdev-monitor.sh
-chmod 777 /root/appnetdev-monitor.sh
-
-# 3 Recargar configuración de systemd, habilitar y iniciar el servicio
-sudo systemctl daemon-reload
-sudo systemctl enable appnetmonitor
-sudo systemctl start appnetmonitor
-
-# Reemplazar el valor del token en el seeder
-sed -i "s/\['token'\] =>.*/\['token'\] => '$TOKENHOST',/" database/seeders/HostListSeeder.php
-sudo apt -y install bc
-
-	# Utilizar sed para reemplazar la línea que contiene DB_PASSWORD
-	sed -i "s/^\(DB_DATABASE=\).*/\1${DB}/" "$ENV_FILE"
-	sed -i "s/^\(DB_USERNAME=\).*/\1${NEW_USERNAME}/" "$ENV_FILE"
-	sed -i "s/^\(DB_PASSWORD=\).*/\1${NEW_PASSWORD}/" "$ENV_FILE"
+    # Utilizar sed para reemplazar la línea que contiene DB_PASSWORD
+    sed -i "s/^\(DB_DATABASE=\).*/\1${DB}/" "$ENV_FILE"
+    sed -i "s/^\(DB_USERNAME=\).*/\1${NEW_USERNAME}/" "$ENV_FILE"
+    sed -i "s/^\(DB_PASSWORD=\).*/\1${NEW_PASSWORD}/" "$ENV_FILE"
     sed -i "s/^\(APP_URL=\).*/\1http:\/\/${IP}\//" "$ENV_FILE"
 
-sed -i "s/^\(FTP_HOST=\).*/\1${FTP_HOST}/" "$ENV_FILE"
-sed -i "s/^\(FTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
-sed -i "s/^\(FTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
-sed -i "s/^\(FTP_ROOT=\).*/\1$(echo "$FTP_ROOT" | sed 's/\//\\\//g')/" "$ENV_FILE"
-sed -i "s/^\(FTP_PASSIVE=\).*/\1${FTP_PASSIVE}/" "$ENV_FILE"
-sed -i "s/^\(FTP_THROW=\).*/\1${FTP_THROW}/" "$ENV_FILE"
+    sed -i "s/^\(FTP_HOST=\).*/\1${FTP_HOST}/" "$ENV_FILE"
+    sed -i "s/^\(FTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
+    sed -i "s/^\(FTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
+    sed -i "s/^\(FTP_ROOT=\).*/\1$(echo "$FTP_ROOT" | sed 's/\//\\\//g')/" "$ENV_FILE"
+    sed -i "s/^\(FTP_PASSIVE=\).*/\1${FTP_PASSIVE}/" "$ENV_FILE"
+    sed -i "s/^\(FTP_THROW=\).*/\1${FTP_THROW}/" "$ENV_FILE"
 
-sed -i "s/^\(SFTP_HOST=\).*/\1${FTP_HOST}/" "$ENV_FILE"
-sed -i "s/^\(SFTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
-sed -i "s/^\(SFTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
-sed -i "s/^\(SFTP_ROOT=\).*/\1$(echo "$FTP_ROOT" | sed 's/\//\\\//g')/" "$ENV_FILE"
+    sed -i "s/^\(SFTP_HOST=\).*/\1${FTP_HOST}/" "$ENV_FILE"
+    sed -i "s/^\(SFTP_USERNAME=\).*/\1${FTP_USER}/" "$ENV_FILE"
+    sed -i "s/^\(SFTP_PASSWORD=\).*/\1${FTP_PASSWORD}/" "$ENV_FILE"
+    sed -i "s/^\(SFTP_ROOT=\).*/\1$(echo "$FTP_ROOT" | sed 's/\//\\\//g')/" "$ENV_FILE"
 
-
- 
-
- 	
-	export COMPOSER_ALLOW_SUPERUSER=1
-	/usr/local/bin/composer update
-	echo 'generar con artisan todo lo de la base mysql necesario'
-	/usr/bin/npm install -g vite
-	php artisan key:generate
-	php artisan migrate
+    export COMPOSER_ALLOW_SUPERUSER=1
+    /usr/local/bin/composer update
+    echo 'generar con artisan todo lo de la base mysql necesario'
+    /usr/bin/npm install -g vite
+    php artisan key:generate
+    php artisan migrate
     php artisan db:seed
-	#php artisan db:seed UsersAndPermissionsSeeder
-	#php artisan db:seed StopCategorySeeder
-	#php artisan db:seed StopTypeSeeder
-	echo 'limpiar cache'
-	php artisan config:clear
-	php artisan route:clear
-	php artisan view:clear
-	echo 'npm install update'
-	/usr/bin/npm install
-	/usr/bin/npm update
-	echo 'dar permiso composer root y instalar y actualizar'
-	export COMPOSER_ALLOW_SUPERUSER=1
-	/usr/local/bin/composer update
-	/usr/bin/npm run build
-	echo 'dar los permisos necesario'
-    cd storage  || exit
+    #php artisan db:seed UsersAndPermissionsSeeder
+    #php artisan db:seed StopCategorySeeder
+    #php artisan db:seed StopTypeSeeder
+    echo 'limpiar cache'
+    php artisan config:clear
+    php artisan route:clear
+    php artisan view:clear
+    echo 'npm install update'
+    /usr/bin/npm install
+    /usr/bin/npm update
+    echo 'dar permiso composer root y instalar y actualizar'
+    export COMPOSER_ALLOW_SUPERUSER=1
+    /usr/local/bin/composer update
+    /usr/bin/npm run build
+    echo 'dar los permisos necesario'
+    cd storage || exit
     unzip logos.zip -d app
     cd /var/www/html/ || exit
- 	sudo rm -rf /var/www/html/public/storage
-  	sudo php artisan storage:link
-	sudo chmod -R 777 /var/www
-	sudo chmod -R 777 *
-	sudo chmod -R 777 storage
-	sudo chmod -R 777 app/Models
-	sudo chmod 777 /var/www/html/storage/logs/
-	sudo chmod 777 /var/www/html/storage/framework/sessions
-	sudo chmod 777 /var/www/html/storage/framework/views
+    sudo rm -rf /var/www/html/public/storage
+    sudo php artisan storage:link
+    sudo chmod -R 777 /var/www
+    sudo chmod -R 777 *
+    sudo chmod -R 777 storage
+    sudo chmod -R 777 app/Models
+    sudo chmod 777 /var/www/html/storage/logs/
+    sudo chmod 777 /var/www/html/storage/framework/sessions
+    sudo chmod 777 /var/www/html/storage/framework/views
 
-	sudo rm -rf .git
+    sudo rm -rf .git
 fi
 
 sudo chown -R :nginx /var/www/html
@@ -1595,31 +1425,25 @@ sudo chown -R :www-data /var/www/html
 sudo chmod -R g+rwx /var/www/html
 sudo chown -R :nginx /var/www/html
 sudo chmod -R g+rwx /var/www/html
-
-                           
-
-
-
-
+sudo apt -y purge apache
+sudo apt -y purge apache2
+sudo apt -y autoremove
 
 if [ "$DB" = "none" ]; then
     echo 'Sin anadir MariaDb '
 elif [ "$DB" = "appnetd_cloud" ]; then
     echo 'MariaDb agregada con exito root password: '"$MARIADBPASSWORD"' donde el root tiene la opcion de remote host'
-	# Mostrar usuario y contraseña generados
-echo "Nuevo usuario y contraseña generado para la ${DB}"
-echo "Usuario: ${NEW_USERNAME}"
-echo "Contraseña: ${NEW_PASSWORD}"
+    # Mostrar usuario y contraseña generados
+    echo "Nuevo usuario y contraseña generado para la ${DB}"
+    echo "Usuario: ${NEW_USERNAME}"
+    echo "Contraseña: ${NEW_PASSWORD}"
 else
     echo "Por favor especifica none o una tabla de MariaDB en instalacion "
     exit 1
 fi
-
 
 echo "Contraseña FTP : $FTP_PASSWORD"
 echo "Username FTP : $FTP_USER"
 echo "Directorio FTP : $FTP_DIR"
 echo "IP ZEROTIER : $IP"
 echo "IP LOCAL : $IP"
-
-

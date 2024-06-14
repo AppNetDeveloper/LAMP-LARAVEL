@@ -14,7 +14,6 @@ if [ "$DB" = "none" ]; then
     echo "Sin MariaDB...."
 elif [ "$DB" = "appnetd_cloud" ]; then
     echo "Instalar MariaDB y crear tabla appnetd_cloud!..."
-
 else
     echo "Por favor especifica 'none' o 'appnetd_cloud' como argumento al ejecutar este script. Ejemplo: sh install.sh apache none o appnetd_cloud o sh install.sh nginx none o uma"
     exit 1

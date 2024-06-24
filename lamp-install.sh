@@ -248,7 +248,7 @@ sudo touch /var/cache/nginx/scgi_temp
 
 # Crear el archivo fastcgi.conf y agregar el contenido
 sudo mkdir /etc/nginx/snippets
-cat <<EOL > /etc/nginx/snippets/fastcgi.conf
+cat <<EOL > /etc/nginx/snippets/fastcgi-php.conf
 # regex para dividir $uri en $fastcgi_script_name y $fastcgi_path
 fastcgi_split_path_info ^(.+\.php)(/.+)$;
 
@@ -1029,7 +1029,7 @@ sudo snap install core
 
 
     echo "Instalando ffmpeg.."
-    sudosnap install --edge ffmpeg
+    sudo snap install --edge ffmpeg
 
 
 fi
@@ -1039,7 +1039,9 @@ if [ "$opencv" = "install" ]; then
     echo "Instalando opencv.."sudo apt install python3 -y
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python3 get-pip.py
+sudo apt-get -y install python3-pip
 pip3 install opencv-contrib-python
+sudo apt-get -y install python3-opencv
 
 
     # final opencv

@@ -1001,7 +1001,7 @@ echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.3/cli/php.ini
 
 # Reinicia el servicio php8.3-fpm y apache
 sudo service php8.3-fpm restart
-sudo systemctl restart nginx
+sudo systemctl restart nginx        
 
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&
     sudo apt-get install -y nodejs
@@ -1041,7 +1041,8 @@ wget https://bootstrap.pypa.io/get-pip.py
 sudo python3 get-pip.py
 sudo apt-get -y install python3-pip
 pip3 install opencv-contrib-python
-sudo apt-get -y install python3-opencv
+sudo apt-get install -y python3-opencv
+pip3 install opencv-contrib-python
 
 
     # final opencv
@@ -1212,6 +1213,9 @@ thread_cache_size = 100  # Aumentado para cachear más hilos
 # Configuraciones de logs
 expire_logs_days = 10
 EOF
+
+sudo mkdir /var/www/phpmyadmin/tmp
+sudo chmod 777 /var/www/phpmyadmin/tmp
 
     # Reiniciamos el servicio para que los cambios tengan efecto
     sudo systemctl restart mariadb

@@ -102,9 +102,9 @@ sudo chmod a+r /etc/apt/keyrings/docker.asc
 
 # Add the repository to Apt sources:
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" |
+    sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
@@ -189,7 +189,7 @@ sudo apt -y purge nginx
 
 sudo apt-get install build-essential libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev openssl libgd-dev libgeoip-dev libperl-dev wget
 
-sudo apt -y install wget 
+sudo apt -y install wget
 
 wget http://nginx.org/download/nginx-1.27.0.tar.gz
 tar -zxvf nginx-1.27.0.tar.gz
@@ -199,42 +199,41 @@ mv * /etc/nginx/
 cd /etc/nginx/ || exit
 
 ./configure \
---prefix=/etc/nginx                                                \
---sbin-path=/usr/sbin/nginx                                        \
---conf-path=/etc/nginx/nginx.conf                                  \
---error-log-path=/var/log/nginx/error.log                          \
---http-log-path=/var/log/nginx/access.log                          \
---pid-path=/var/run/nginx.pid                                      \
---lock-path=/var/run/nginx.lock                                    \
---http-client-body-temp-path=/var/cache/nginx/client_temp          \
---http-proxy-temp-path=/var/cache/nginx/proxy_temp                 \
---http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp             \
---http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp                 \
---http-scgi-temp-path=/var/cache/nginx/scgi_temp                   \
---user=nginx                                                       \
---group=nginx                                                      \
---with-http_ssl_module                                             \
---with-http_realip_module                                          \
---with-http_addition_module                                        \
---with-http_sub_module                                             \
---with-http_dav_module                                             \
---with-http_flv_module                                             \
---with-http_mp4_module                                             \
---with-http_gunzip_module                                          \
---with-http_gzip_static_module                                     \
---with-http_random_index_module                                    \
---with-http_secure_link_module                                     \
---with-http_stub_status_module                                     \
---with-http_auth_request_module                                    \
---with-mail                                                        \
---with-mail_ssl_module                                             \
---with-file-aio                                                    \
---with-http_v2_module                                              \
---with-threads                                                     \
---with-stream                                                      \
---with-stream_ssl_module                                           \
---with-http_slice_module
-
+    --prefix=/etc/nginx \
+    --sbin-path=/usr/sbin/nginx \
+    --conf-path=/etc/nginx/nginx.conf \
+    --error-log-path=/var/log/nginx/error.log \
+    --http-log-path=/var/log/nginx/access.log \
+    --pid-path=/var/run/nginx.pid \
+    --lock-path=/var/run/nginx.lock \
+    --http-client-body-temp-path=/var/cache/nginx/client_temp \
+    --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+    --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+    --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+    --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+    --user=nginx \
+    --group=nginx \
+    --with-http_ssl_module \
+    --with-http_realip_module \
+    --with-http_addition_module \
+    --with-http_sub_module \
+    --with-http_dav_module \
+    --with-http_flv_module \
+    --with-http_mp4_module \
+    --with-http_gunzip_module \
+    --with-http_gzip_static_module \
+    --with-http_random_index_module \
+    --with-http_secure_link_module \
+    --with-http_stub_status_module \
+    --with-http_auth_request_module \
+    --with-mail \
+    --with-mail_ssl_module \
+    --with-file-aio \
+    --with-http_v2_module \
+    --with-threads \
+    --with-stream \
+    --with-stream_ssl_module \
+    --with-http_slice_module
 
 make
 sudo make install
@@ -248,7 +247,7 @@ sudo touch /var/cache/nginx/scgi_temp
 
 # Crear el archivo fastcgi.conf y agregar el contenido
 sudo mkdir /etc/nginx/snippets
-cat <<EOL > /etc/nginx/snippets/fastcgi-php.conf
+cat <<EOL >/etc/nginx/snippets/fastcgi-php.conf
 # regex para dividir $uri en $fastcgi_script_name y $fastcgi_path
 fastcgi_split_path_info ^(.+\.php)(/.+)$;
 
@@ -263,7 +262,6 @@ fastcgi_param PATH_INFO \$path_info;
 fastcgi_index index.php;
 include fastcgi.conf;
 EOL
-
 
 # Crear el archivo de servicio de systemd para Nginx
 sudo bash -c 'cat << EOF > /etc/systemd/system/nginx.service
@@ -1001,7 +999,7 @@ echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.3/cli/php.ini
 
 # Reinicia el servicio php8.3-fpm y apache
 sudo service php8.3-fpm restart
-sudo systemctl restart nginx        
+sudo systemctl restart nginx
 
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&
     sudo apt-get install -y nodejs
@@ -1023,27 +1021,24 @@ nvm alias default 'lts/*'
 #INSTALL FFMPEG SOLO SI ES INSTALL
 
 if [ "$ffmpeg" = "install" ]; then
-sudo apt update
-sudo apt install snapd
-sudo snap install core
-
+    sudo apt update
+    sudo apt install snapd
+    sudo snap install core
 
     echo "Instalando ffmpeg.."
     sudo snap install --edge ffmpeg
-
 
 fi
 
 # install opencv
 if [ "$opencv" = "install" ]; then
     echo "Instalando opencv.."sudo apt install python3 -y
-wget https://bootstrap.pypa.io/get-pip.py
-sudo python3 get-pip.py
-sudo apt-get -y install python3-pip
-pip3 install opencv-contrib-python
-sudo apt-get install -y python3-opencv
-pip3 install opencv-contrib-python
-
+    wget https://bootstrap.pypa.io/get-pip.py
+    sudo python3 get-pip.py
+    sudo apt-get -y install python3-pip
+    pip3 install opencv-contrib-python
+    sudo apt-get install -y python3-opencv
+    pip3 install opencv-contrib-python
 
     # final opencv
 
@@ -1053,7 +1048,7 @@ fi
 if [ "$TensorFlow" = "install" ]; then
     echo "Instalando tensorflow.."
 
-pip install --upgrade pip setuptools wheel
+    pip install --upgrade pip setuptools wheel
 
     # Obtener la arquitectura de la CPU
     ARCH=$(uname -m)
@@ -1124,12 +1119,11 @@ elif [ "$DB" != "" ]; then
     curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash
 
     apt install software-properties-common apt-transport-https -y
-curl -fsSL http://mirror.mariadb.org/PublicKey_v2 | sudo gpg --dearmor | sudo tee /usr/share/keyrings/mariadb.gpg > /dev/null
-echo "deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/mariadb.gpg] http://mirror.mariadb.org/repo/11.4.2/ubuntu/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mariadb.list
-echo "deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/mariadb.gpg] http://mirror.mariadb.org/repo/11.4.2/debian/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mariadb.list
+    curl -fsSL http://mirror.mariadb.org/PublicKey_v2 | sudo gpg --dearmor | sudo tee /usr/share/keyrings/mariadb.gpg >/dev/null
+    echo "deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/mariadb.gpg] http://mirror.mariadb.org/repo/11.4.2/ubuntu/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mariadb.list
+    echo "deb [arch=amd64,arm64,ppc64el signed-by=/usr/share/keyrings/mariadb.gpg] http://mirror.mariadb.org/repo/11.4.2/debian/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mariadb.list
 
-
-apt update && apt upgrade -y
+    apt update && apt upgrade -y
 
     # Update package lists
     sudo apt-get update -y
@@ -1214,8 +1208,8 @@ thread_cache_size = 100  # Aumentado para cachear más hilos
 expire_logs_days = 10
 EOF
 
-sudo mkdir /var/www/phpmyadmin/tmp
-sudo chmod 777 /var/www/phpmyadmin/tmp
+    sudo mkdir /var/www/phpmyadmin/tmp
+    sudo chmod 777 /var/www/phpmyadmin/tmp
 
     # Reiniciamos el servicio para que los cambios tengan efecto
     sudo systemctl restart mariadb
@@ -1337,13 +1331,13 @@ sudo apt -y install bridge-utils
 
 #Instalar phpmyadmin
 echo "Instalando phpmyadmin"
-    cd /var/www/ || exit
-    mkdir phpmyadmin
+cd /var/www/ || exit
+mkdir phpmyadmin
 
-    sudo apt -y install -y wget zip
-    wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
-    sudo unzip phpMyAdmin-5.2.1-all-languages.zip
-    mv phpMyAdmin-5.2.1-all-languages/* phpmyadmin
+sudo apt -y install -y wget zip
+wget https://files.phpmyadmin.net/phpMyAdmin/5.2.1/phpMyAdmin-5.2.1-all-languages.zip
+sudo unzip phpMyAdmin-5.2.1-all-languages.zip
+mv phpMyAdmin-5.2.1-all-languages/* phpmyadmin
 
 # descargar de git
 echo "Instalando appnetd_cloud si no es none"
@@ -1352,8 +1346,6 @@ if [ "$INSTALL" = "none" ]; then
     echo 'Sin Instalar appnetd_cloud '
 elif [ "$INSTALL" != "" ]; then
     echo 'Instalando appnetd_cloud y limpiar antes de empezar'
-
-    
 
     mkdir /var/www/html/
     cd /var/www/html/ || exit

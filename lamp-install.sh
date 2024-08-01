@@ -11,6 +11,7 @@ opencv="$7"
 TensorFlow="$8"
 VpnIpOpenCsf="$9"
 DOMAIN="$10"
+CupsServer="$11"
 
 if [ "$DB" = "none" ]; then
     echo "Sin MariaDB...."
@@ -1106,6 +1107,41 @@ if [ "$TensorFlow" = "install" ]; then
     fi
 
     # Final install tensorflow
+
+fi
+
+# install cups
+if [ "$CupsServer" = "install" ]; then
+        
+    # Instalar CUPS
+    echo "Instalando CUPS..."
+    sudo apt install -y cups
+
+    # Verificar que CUPS esté corriendo
+    echo "Verificando el estado de CUPS..."
+    systemctl status cups --no-pager
+
+    # Permitir acceso remoto (opcional)
+    CUPS_CONF="/etc/cups/cupsd.conf"
+    echo "Configurando CUPS para permitir acceso remoto..."
+
+    # Realiza una copia de seguridad del archivo de configuración
+    sudo cp $CUPS_CONF "${CUPS_CONF}.bak"
+
+    # Modificar la configuración de CUPS
+    sudo sed -i '/<Location \/>/,/<\/Location>/s/Order deny,allow/Order allow,deny/' $CUPS_CONF
+    sudo sed -i '/<Location \/>/,/<\/Location>/s/Allow @LOCAL/Allow @LOCAL\n\tAllow all/' $CUPS_CONF
+
+    # Reiniciar CUPS para aplicar cambios
+    echo "Reiniciando CUPS..."
+    sudo systemctl restart cups
+
+    # Mostrar el estado final de CUPS
+    echo "Estado final de CUPS:"
+    systemctl status cups --no-pager
+
+    echo "CUPS ha sido instalado y configurado correctamente."
+    echo "Accede a la interfaz web de CUPS en: http://<IP_DEL_SERVIDOR>:631"
 
 fi
 

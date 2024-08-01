@@ -12,6 +12,7 @@ TensorFlow="$8"
 VpnIpOpenCsf="$9"
 DOMAIN="$10"
 CupsServer="$11"
+mqtt="$12"
 
 if [ "$DB" = "none" ]; then
     echo "Sin MariaDB...."
@@ -1108,6 +1109,40 @@ if [ "$TensorFlow" = "install" ]; then
 
     # Final install tensorflow
 
+fi
+
+if([ "$mqtt" = "install" ])
+then
+    echo "Instalando cMosquitto.."
+
+
+# Instalar Mosquitto y el cliente Mosquitto
+echo "Instalando Mosquitto y el cliente..."
+sudo apt install -y mosquitto mosquitto-clients
+
+# Crear archivo de configuración en /etc/mosquitto/conf.d/default.conf
+echo "Configurando Mosquitto en /etc/mosquitto/conf.d/default.conf..."
+cat <<EOL | sudo tee /etc/mosquitto/conf.d/default.conf
+allow_anonymous true
+
+listener 1883 0.0.0.0
+max_connections 500000
+max_inflight_messages 20000
+max_queued_messages 100000
+autosave_interval 600
+
+listener 8083
+protocol websockets
+EOL
+
+# Reiniciar el servicio Mosquitto
+echo "Reiniciando el servicio Mosquitto..."
+sudo systemctl restart mosquitto
+
+# Habilitar Mosquitto para que se inicie al arrancar el sistema
+sudo systemctl enable mosquitto
+
+echo "Instalación y configuración de Mosquitto completadas."
 fi
 
 # install cups

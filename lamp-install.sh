@@ -9,10 +9,12 @@ FTP="$5"
 ffmpeg="$6"
 opencv="$7"
 TensorFlow="$8"
+VpnIpOpenCsf="$9"
+DOMAIN="$10"
 
 if [ "$DB" = "none" ]; then
     echo "Sin MariaDB...."
-elif [ "$DB" = "appnetd_cloud" ]; then
+elif [ "$DB" != ""]; then
     echo "Instalar MariaDB y crear tabla appnetd_cloud!..."
 else
     echo "Por favor especifica 'none' o 'appnetd_cloud' como argumento al ejecutar este script. Ejemplo: sh install.sh apache none o appnetd_cloud o sh install.sh nginx none o uma"
@@ -134,6 +136,11 @@ else
     echo "Este script solo funciona en sistemas x86_64 o aarch64."
     exit 1
 fi
+
+
+echo " python necesarios"
+
+pip install pymodbus requests Flask numpy pandas flask-cors paho-mqtt setuptools-rust cupy tensorflow torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 --break-system-package
 
 echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
 
@@ -469,10 +476,10 @@ server {
 EOL'
 
 # Actualizar configuración de Nginx para default.conf
-sudo sed -i "s/server_name localhost.*/server_name localhost $IP 127.0.0.1;/" /etc/nginx/sites-available/default.conf
+sudo sed -i "s/server_name localhost.*/server_name localhost $IP 127.0.0.1 $DOMAIN;/" /etc/nginx/sites-available/default.conf
 
 # Actualizar configuración de Nginx para phpmyadmin.conf
-sudo sed -i "s/server_name localhost.*/server_name localhost $IP 127.0.0.1;/" /etc/nginx/sites-available/phpmyadmin.conf
+sudo sed -i "s/server_name localhost.*/server_name localhost $IP 127.0.0.1 $DOMAIN;/" /etc/nginx/sites-available/phpmyadmin.conf
 
 # Descarga las listas de IPs de Cloudflare (IPv4 e IPv6) y concatena en un solo archivo
 curl -sL https://www.cloudflare.com/ips-v4/ https://www.cloudflare.com/ips-v6/ | cat >ipscloudflare.txt
@@ -1021,24 +1028,23 @@ nvm alias default 'lts/*'
 #INSTALL FFMPEG SOLO SI ES INSTALL
 
 if [ "$ffmpeg" = "install" ]; then
-    sudo apt update
-    sudo apt install snapd
-    sudo snap install core
-
-    echo "Instalando ffmpeg.."
-    sudo snap install --edge ffmpeg
+    sudo apt install ffmpeg
 
 fi
 
+sudo apt -y install python3-venv python3-dev -y
+
 # install opencv
 if [ "$opencv" = "install" ]; then
-    echo "Instalando opencv.."sudo apt install python3 -y
+    echo "Instalando opencv.."
+
     wget https://bootstrap.pypa.io/get-pip.py
     sudo python3 get-pip.py
+    sudo apt install -y libopencv-dev
     sudo apt-get -y install python3-pip
-    pip3 install opencv-contrib-python
+    pip3 install opencv-contrib-python --break-system-packages
     sudo apt-get install -y python3-opencv
-    pip3 install opencv-contrib-python
+    pip3 install opencv-contrib-python --break-system-packages
 
     # final opencv
 
@@ -1048,7 +1054,7 @@ fi
 if [ "$TensorFlow" = "install" ]; then
     echo "Instalando tensorflow.."
 
-    pip install --upgrade pip setuptools wheel
+    pip install --upgrade pip setuptools wheel --break-system-packages
 
     # Obtener la arquitectura de la CPU
     ARCH=$(uname -m)
@@ -1062,7 +1068,7 @@ if [ "$TensorFlow" = "install" ]; then
 
         # Instalar TensorFlow con soporte para GPU
         pip install --upgrade pip
-        pip install tensorflow
+        pip install tensorflow --break-system-packages
 
         # Verificar la instalación de TensorFlow
         python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU'))"
@@ -1073,15 +1079,15 @@ if [ "$TensorFlow" = "install" ]; then
 
         # Instalar Python 3 y pip
         sudo apt update
-        sudo apt -y install -y python3 python3-pip python3-venv
+        sudo apt -y install -y python3 python3-pip python3-venv --break-system-packages
 
         # Crear un entorno virtual y activarlo
         python3 -m venv tf_env
         source tf_env/bin/activate
 
         # Instalar TensorFlow optimizado para ARM
-        python3 -m pip install tensorflow[and-cuda]
-        pip install tensorflow-cpu-aws
+        python3 -m pip install tensorflow[and-cuda] --break-system-packages
+        pip install tensorflow-cpu-aws --break-system-packages
 
         # Verificar la instalación de TensorFlow
         python3 -c "import tensorflow as tf; print(tf.config.list_physical_devices('CPU'))"
@@ -1316,6 +1322,44 @@ sudo sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
 systemctl start csf
 systemctl enable csf
 sudo csf -x
+
+# Define los puertos que deseas abrir
+PUERTOS="1880,9090,1883,8081"
+
+# Define la red de VPN
+RED_VPN="$VpnIpOpenCsf/24"   # Define la red de VPN
+
+# Ruta al archivo de configuración de CSF
+CSF_CONF="/etc/csf/csf.conf"
+
+# Función para agregar puertos solo si no están presentes
+agregar_puertos() {
+    LOCAL_PORTS=$(grep "^TCP_IN = " $CSF_CONF | cut -d'"' -f2)
+    
+    for PUERTO in $(echo $PUERTOS | tr ',' ' '); do
+        if [[ ! $LOCAL_PORTS =~ (^|,)$PUERTO(,|$) ]]; then
+            LOCAL_PORTS="$LOCAL_PORTS,$PUERTO"
+        fi
+    done
+
+    # Actualizar TCP_IN y TCP_OUT
+    sed -i "s/^TCP_IN = \".*\"/TCP_IN = \"$LOCAL_PORTS\"/" $CSF_CONF
+    sed -i "s/^TCP_OUT = \".*\"/TCP_OUT = \"$LOCAL_PORTS\"/" $CSF_CONF
+}
+
+# Llamar a la función para agregar puertos
+agregar_puertos
+
+# Permitir acceso total a la red VPN si no está presente
+if ! grep -q "$RED_VPN" /etc/csf/csf.allow; then
+    echo "$RED_VPN # Acceso total a la red VPN" >> /etc/csf/csf.allow
+fi
+
+# Reiniciar CSF para aplicar los cambios
+csf -r
+
+echo "Puertos $PUERTOS abiertos en CSF y acceso total a la red $RED_VPN."
+
 sudo csf -e
 
 sudo apt-get install fail2ban -y

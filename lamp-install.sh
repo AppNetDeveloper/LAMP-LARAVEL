@@ -13,6 +13,7 @@ VpnIpOpenCsf="$9"
 DOMAIN="$10"
 CupsServer="$11"
 mqtt="$12"
+GitUrl="$13"
 
 if [ "$DB" = "none" ]; then
     echo "Sin MariaDB...."
@@ -1497,7 +1498,7 @@ elif [ "$INSTALL" != "" ]; then
     cd /var/www/html/ || exit
 
     echo 'clonar proyecto desde git'
-    git clone -b "$INSTALL" https://github.com/AppNetDeveloper/Gestion-v3.1.git /var/www/html >/var/www/log.txt 2>&1
+    git clone -b "$INSTALL" "$GitUrl" /var/www/html >/var/www/log.txt 2>&1
     echo 'instalar .env'
     cp .env.example .env
     # Ruta del archivo .env
@@ -1577,6 +1578,24 @@ elif [ "$INSTALL" != "" ]; then
     sudo chmod 777 /var/www/html/storage/framework/views
 
     sudo rm -rf .git
+
+    sudo apt-get install -y supervisor
+    sudo systemctl enable supervisor
+    echo "Copiando archivos de configuración de Laravel a Supervisor..."
+    CONFIG_SOURCE_DIR=$(pwd)
+    CONFIG_DEST_DIR="/etc/supervisor/conf.d"
+
+    for conf_file in $CONFIG_SOURCE_DIR/laravel*.conf; do
+        if [ -f "$conf_file" ]; then
+            sudo cp "$conf_file" "$CONFIG_DEST_DIR"
+        fi
+    done
+    echo "Releyendo y actualizando configuración de Supervisor..."
+    sudo supervisorctl reread
+    sudo supervisorctl update
+    echo "Iniciando y reiniciando servicios Laravel..."
+    sudo supervisorctl start laravel*
+    sudo supervisorctl restart laravel*
 fi
 
 sudo chown -R :nginx /var/www/html

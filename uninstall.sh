@@ -156,6 +156,25 @@ sudo rm -rf /etc/proftpd
 # Vacía el archivo de registro de journalctl
 sudo journalctl --vacuum-size=100M
 
+echo "Desinstalando CUPS..."
+    sudo apt purge -y cups cups-client cups-common cups-daemon cups-server-common
+    echo "Eliminando archivos de configuración de CUPS..."
+    sudo rm -rf /etc/cups
+    sudo rm -rf /var/lib/cups
+
+    echo "Desinstalando Mosquitto..."
+    sudo apt purge -y mosquitto mosquitto-clients
+    echo "Eliminando archivos de configuración de Mosquitto..."
+    sudo rm -rf /etc/mosquitto
+    sudo rm -rf /var/lib/mosquitto
+
+echo "Desinstalando Supervisor y borrando archivos de configuración..."
+    sudo apt-get purge -y supervisor
+    sudo rm -rf /etc/supervisor
+    sudo rm -rf /var/log/supervisor
+    echo "Supervisor y todos los archivos de configuración han sido eliminados."
+
+    
 # Limpiar directorios
 sudo rm -rf /var/www/html  # Sitios web de Apache
 sudo rm -rf /etc/apache2   # Configuración de Apache

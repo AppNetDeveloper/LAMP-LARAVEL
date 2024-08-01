@@ -1112,36 +1112,67 @@ fi
 
 # install cups
 if [ "$CupsServer" = "install" ]; then
-        
-    # Instalar CUPS
-    echo "Instalando CUPS..."
-    sudo apt install -y cups
+    echo "Instalando cups.."
 
-    # Verificar que CUPS esté corriendo
-    echo "Verificando el estado de CUPS..."
-    systemctl status cups --no-pager
+# Script para instalar y configurar CUPS en Ubuntu Server
+sudo apt-get -y install python3-pyqt5
+sudo apt-get -y install hplip hplip-data hplip-doc hpijs-ppds hplip-gui hplip-dbg printer-driver-hpcups printer-driver-hpijs printer-driver-pxljr
+sudo apt -y install hplip hplip-gui
 
-    # Permitir acceso remoto (opcional)
-    CUPS_CONF="/etc/cups/cupsd.conf"
-    echo "Configurando CUPS para permitir acceso remoto..."
+# Actualizar la lista de paquetes
+echo "Actualizando la lista de paquetes..."
+sudo apt update
 
-    # Realiza una copia de seguridad del archivo de configuración
-    sudo cp $CUPS_CONF "${CUPS_CONF}.bak"
+# Instalar CUPS
+echo "Instalando CUPS..."
+sudo apt install -y cups
 
-    # Modificar la configuración de CUPS
-    sudo sed -i '/<Location \/>/,/<\/Location>/s/Order deny,allow/Order allow,deny/' $CUPS_CONF
-    sudo sed -i '/<Location \/>/,/<\/Location>/s/Allow @LOCAL/Allow @LOCAL\n\tAllow all/' $CUPS_CONF
+# Verificar que CUPS esté corriendo
+echo "Verificando el estado de CUPS..."
+systemctl status cups --no-pager
 
-    # Reiniciar CUPS para aplicar cambios
-    echo "Reiniciando CUPS..."
-    sudo systemctl restart cups
+# Permitir acceso remoto y configurar CUPS para escuchar en 0.0.0.0
+CUPS_CONF="/etc/cups/cupsd.conf"
+echo "Configurando CUPS para permitir acceso remoto..."
 
-    # Mostrar el estado final de CUPS
-    echo "Estado final de CUPS:"
-    systemctl status cups --no-pager
+# Realiza una copia de seguridad del archivo de configuración
+sudo cp $CUPS_CONF "${CUPS_CONF}.bak"
 
-    echo "CUPS ha sido instalado y configurado correctamente."
-    echo "Accede a la interfaz web de CUPS en: http://<IP_DEL_SERVIDOR>:631"
+# Modificar la configuración de CUPS
+# Cambiar 'Listen localhost:631' a 'Listen 0.0.0.0:631'
+sudo sed -i 's/^Listen localhost:631/Listen 0.0.0.0:631/' $CUPS_CONF || echo "No se encontró la línea de escucha. Añadiendo..."
+echo "Listen 0.0.0.0:631" | sudo tee -a $CUPS_CONF
+
+# Modificar las secciones de acceso para permitir acceso remoto
+# Añadir o reemplazar la sección <Location />
+sudo sed -i '/<Location \/>/,/<\/Location>/d' $CUPS_CONF
+echo "<Location />" | sudo tee -a $CUPS_CONF
+echo "  Order allow,deny" | sudo tee -a $CUPS_CONF
+echo "  Allow all" | sudo tee -a $CUPS_CONF
+echo "</Location>" | sudo tee -a $CUPS_CONF
+
+# Añadir o reemplazar la sección <Location /admin>
+sudo sed -i '/<Location \/admin>/,/<\/Location>/d' $CUPS_CONF
+echo "<Location /admin>" | sudo tee -a $CUPS_CONF
+echo "  Order allow,deny" | sudo tee -a $CUPS_CONF
+echo "  Allow all" | sudo tee -a $CUPS_CONF
+echo "</Location>" | sudo tee -a $CUPS_CONF
+
+# Reiniciar CUPS para aplicar cambios
+echo "Reiniciando CUPS..."
+sudo systemctl restart cups
+
+# Asegurarse de que el firewall permite el tráfico en el puerto 631
+echo "Configurando el firewall para permitir tráfico en el puerto 631..."
+sudo ufw allow 631/tcp
+
+# Mostrar el estado final de CUPS
+echo "Estado final de CUPS:"
+systemctl status cups --no-pager
+
+echo "CUPS ha sido instalado y configurado correctamente."
+echo "Accede a la interfaz web de CUPS en: http://<IP_DEL_SERVIDOR>:631    y para anadir hp sudo hp-setup -i"
+
 
 fi
 
@@ -1360,7 +1391,7 @@ systemctl enable csf
 sudo csf -x
 
 # Define los puertos que deseas abrir
-PUERTOS="1880,9090,1883,8081"
+PUERTOS="1880,9090,1883,8081,9100,515,631"
 
 # Define la red de VPN
 RED_VPN="$VpnIpOpenCsf/24"   # Define la red de VPN

@@ -17,7 +17,7 @@ GitUrl="$13"
 
 if [ "$DB" = "none" ]; then
     echo "Sin MariaDB...."
-elif [ "$DB" != ""]; then
+elif [ "$DB" != "" ]; then
     echo "Instalar MariaDB y crear tabla appnetd_cloud!..."
 else
     echo "Por favor especifica 'none' o 'appnetd_cloud' como argumento al ejecutar este script. Ejemplo: sh install.sh apache none o appnetd_cloud o sh install.sh nginx none o uma"
@@ -143,7 +143,24 @@ fi
 
 echo " python necesarios"
 
-pip install pymodbus requests Flask numpy pandas flask-cors paho-mqtt setuptools-rust cupy tensorflow torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 --break-system-package
+pip install pymodbus --break-system-packages
+pip install requests --break-system-packages
+pip install Flask --break-system-packages
+pip install numpy --break-system-packages
+pip install pandas --break-system-packages
+pip install flask-cors --break-system-packages
+pip install paho-mqtt --break-system-packages
+pip install setuptools-rust --break-system-packages
+pip install cupy --break-system-packages
+pip install tensorflow --break-system-packages
+pip install torch --extra-index-url https://download.pytorch.org/whl/cu113 --break-system-packages
+pip install torchvision --extra-index-url https://download.pytorch.org/whl/cu113 --break-system-packages
+pip install torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 --break-system-packages
+pip3 install Flask --break-system-packages
+pip install paho-mqtt pymodbus --break-system-packages
+pip install flask-cors --break-system-packages
+
+
 
 echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
 
@@ -990,6 +1007,7 @@ echo "process.priority = -19" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
 echo "php_value[memory_limit] = 512M" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
 
 # Añade las líneas al archivo php.ini
+#memory_limit = -1 si le quieres dar maximo de ram
 echo "memory_limit=4096M" | sudo tee -a /etc/php/8.3/cli/php.ini
 echo "date.timezone=Europe/Madrid" | sudo tee -a /etc/php/8.3/cli/php.ini
 echo "post_max_size=20000M" | sudo tee -a /etc/php/8.3/cli/php.ini
@@ -1006,6 +1024,24 @@ echo "opcache.interned_strings_buffer=8" | sudo tee -a /etc/php/8.3/cli/php.ini
 echo "opcache.max_accelerated_files=4000" | sudo tee -a /etc/php/8.3/cli/php.ini
 echo "opcache.revalidate_freq=60" | sudo tee -a /etc/php/8.3/cli/php.ini
 echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.3/cli/php.ini
+
+# Añade las líneas al archivo php.ini
+echo "memory_limit=1024M" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "date.timezone=Europe/Madrid" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "post_max_size=20000M" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "upload_max_filesize=20000M" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "max_execution_time=180000" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "max_input_time=12000" | sudo tee -a /etc/php/8.3/fpm/php.ini
+
+#anadir zend para mejor velocidad en web server
+echo "[opcache]" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "zend_extension=opcache.so" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "opcache.enable=1" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "opcache.memory_consumption=128" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "opcache.interned_strings_buffer=8" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "opcache.max_accelerated_files=4000" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "opcache.revalidate_freq=60" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.3/fpm/php.ini
 
 # Reinicia el servicio php8.3-fpm y apache
 sudo service php8.3-fpm restart
@@ -1427,7 +1463,7 @@ systemctl enable csf
 sudo csf -x
 
 # Define los puertos que deseas abrir
-PUERTOS="1880,9090,1883,8081,9100,515,631"
+PUERTOS="1880,9090,1883,8081,9100,515,631,22"
 
 # Define la red de VPN
 RED_VPN="$VpnIpOpenCsf/24"   # Define la red de VPN
@@ -1439,9 +1475,9 @@ CSF_CONF="/etc/csf/csf.conf"
 agregar_puertos() {
     LOCAL_PORTS=$(grep "^TCP_IN = " $CSF_CONF | cut -d'"' -f2)
     
-    for PUERTO in $(echo $PUERTOS | tr ',' ' '); do
-        if [[ ! $LOCAL_PORTS =~ (^|,)$PUERTO(,|$) ]]; then
-            LOCAL_PORTS="$LOCAL_PORTS,$PUERTO"
+    for PUERTO in $(echo "$PUERTOS" | tr ',' ' '); do
+        if ! echo "$LOCAL_PORTS" | grep -q "\b$PUERTO\b"; then
+            LOCAL_PORTS=$(printf "%s,$PUERTO" "$LOCAL_PORTS")
         fi
     done
 
@@ -1563,6 +1599,23 @@ elif [ "$INSTALL" != "" ]; then
     export COMPOSER_ALLOW_SUPERUSER=1
     /usr/local/bin/composer update
     /usr/bin/npm run build
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     echo 'dar los permisos necesario'
     cd storage || exit
     unzip logos.zip -d app

@@ -161,7 +161,6 @@ pip install paho-mqtt pymodbus --break-system-packages
 pip install flask-cors --break-system-packages
 
 
-
 echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
 
 # Crear una copia de seguridad del archivo sources.list

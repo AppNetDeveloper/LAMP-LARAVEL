@@ -1156,7 +1156,6 @@ then
 echo "Instalando Mosquitto y el cliente..."
 sudo apt install -y mosquitto mosquitto-clients
 
-# Crear archivo de configuración en /etc/mosquitto/conf.d/default.conf
 echo "Configurando Mosquitto en /etc/mosquitto/conf.d/default.conf..."
 cat <<EOL | sudo tee /etc/mosquitto/conf.d/default.conf
 allow_anonymous true
@@ -1166,10 +1165,12 @@ max_connections 500000
 max_inflight_messages 20000
 max_queued_messages 100000
 autosave_interval 600
+max_connections_per_client 1000  # Ajusta este valor según sea necesario
 
-listener 8083
+listener 8083 0.0.0.0
 protocol websockets
 EOL
+
 
 # Reiniciar el servicio Mosquitto
 echo "Reiniciando el servicio Mosquitto..."

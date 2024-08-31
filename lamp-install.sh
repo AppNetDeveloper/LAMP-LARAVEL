@@ -1647,8 +1647,7 @@ elif [ "$INSTALL" != "" ]; then
     sudo supervisorctl reread
     sudo supervisorctl update
     echo "Iniciando y reiniciando servicios Laravel..."
-    sudo supervisorctl start laravel*
-    sudo supervisorctl restart laravel*
+    sudo supervisorctl restart all
 fi
 
 sudo chown -R :nginx /var/www/html

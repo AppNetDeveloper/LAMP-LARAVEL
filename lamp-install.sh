@@ -159,6 +159,7 @@ pip install torchaudio --extra-index-url https://download.pytorch.org/whl/cu113 
 pip3 install Flask --break-system-packages
 pip install paho-mqtt pymodbus --break-system-packages
 pip install flask-cors --break-system-packages
+pip install python-dotenv --break-system-packages
 
 
 echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"

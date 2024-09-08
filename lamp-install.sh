@@ -1665,7 +1665,7 @@ elif [ "$INSTALL" != "" ]; then
     sudo chmod 777 /var/www/html/storage/framework/sessions
     sudo chmod 777 /var/www/html/storage/framework/views
 
-    sudo rm -rf .git
+  #  sudo rm -rf .git
 
     sudo apt-get install -y supervisor
     sudo systemctl enable supervisor

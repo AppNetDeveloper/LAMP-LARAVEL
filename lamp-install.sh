@@ -1,103 +1,136 @@
 #!/bin/sh
+
+# Cambiar al directorio del home
 cd ~ || exit
 
+# Variables de entrada
 DB="$1"
 INSTALL="$2"
 VPN="$3"
 MARIADBPASSWORD="$4"
 FTP="$5"
-ffmpeg="$6"
-opencv="$7"
-TensorFlow="$8"
-VpnIpOpenCsf="$9"
-DOMAIN="$10"
-CupsServer="$11"
-mqtt="$12"
-GitUrl="$13"
+FFMPEG="$6"
+OPENCV="$7"
+TENSORFLOW="$8"
+VPN_IP_OPEN_CSF="$9"
+DOMAIN="${10}"
+CUPS_SERVER="${11}"
+MQTT="${12}"
+GIT_URL="${13}"
 
-if [ "$DB" = "none" ]; then
-    echo "Sin MariaDB...."
-elif [ "$DB" != "" ]; then
-    echo "Instalar MariaDB y crear tabla appnetd_cloud!..."
-else
-    echo "Por favor especifica 'none' o 'appnetd_cloud' como argumento al ejecutar este script. Ejemplo: sh install.sh apache none o appnetd_cloud o sh install.sh nginx none o uma"
+# Función para manejar errores de entrada
+error_exit() {
+    echo "$1"
     exit 1
-fi
+}
 
-if [ "$INSTALL" = "none" ]; then
-    echo 'Sin Installar  '
-elif [ "$INSTALL" != "" ]; then
-    echo 'Installar appnetd_cloud'
-else
-    echo "Por favor especifica none o install en instalacion "
-    exit 1
-fi
+# Manejo de MariaDB
+case "$DB" in
+    "none")
+        echo "Sin MariaDB...."
+        ;;
+    "")
+        error_exit "Por favor especifica 'none' o 'appnetd_cloud' como argumento. Ejemplo: sh install.sh apache none o appnetd_cloud"
+        ;;
+    *)
+        echo "Instalando MariaDB y creando tabla appnetd_cloud..."
+        ;;
+esac
 
-if [ "$VPN" = "none" ]; then
-    echo 'Sin VPN P2P Zerotier, Sin abrir Puertos '
-    IP=localhost
-elif [ "$VPN" != "" ]; then
-    echo 'Installar VPN Zerotier'
-    rm /etc/apt/sources.list.d/zerotier*
-    sudo pt remove --yes zerotier-one
-    sudo curl -s https://install.zerotier.com | sudo bash
-    sudo zerotier-cli join "$VPN"
-    sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'
-    IP=$(sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
-    echo "IP ZEROTIER: $IP"
-else
-    echo "Por favor especifica none o EL ID RED en instalacion "
-    exit 1
-fi
+# Manejo de instalación
+case "$INSTALL" in
+    "none")
+        echo "Sin instalar..."
+        ;;
+    "")
+        error_exit "Por favor especifica 'none' o 'install' en la instalación."
+        ;;
+    *)
+        echo "Instalando appnetd_cloud..."
+        ;;
+esac
 
-if [ "$FTP" = "install" ]; then
-    echo "Instalando ftp server..."
-elif [ "$FTP" = "none" ]; then
-    echo "Sin instalar ftp server..."
-else
-    if [ "$FTP" != "" ]; then
-        echo "Usar propio servidor FTP"
+# Manejo de VPN
+case "$VPN" in
+    "none")
+        echo "Sin VPN P2P Zerotier, sin abrir puertos"
+        IP="localhost"
+        ;;
+    "")
+        error_exit "Por favor especifica 'none' o el ID de red en la instalación."
+        ;;
+    *)
+        echo "Instalando VPN Zerotier..."
+        sudo apt remove --yes zerotier-one
+        sudo curl -s https://install.zerotier.com | sudo bash
+        sudo zerotier-cli join "$VPN"
+        IP=$(sudo zerotier-cli get "$VPN" ip | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+        echo "IP ZEROTIER: $IP"
+        ;;
+esac
 
-        # Valor Usuario:contraseña
-        # Separar en dos variables
+# Manejo de FTP
+case "$FTP" in
+    "install")
+        echo "Instalando servidor FTP..."
+        ;;
+    "none")
+        echo "Sin instalar servidor FTP..."
+        ;;
+    "")
+        error_exit "Por favor especifica 'install', 'none', o 'usuario:contraseña' para el FTP server."
+        ;;
+    *)
         FTP_USER=$(echo "$FTP" | cut -d ':' -f 1)
         FTP_PASSWORD=$(echo "$FTP" | cut -d ':' -f 2)
-
-        # Mostrar los valores separados
+        echo "Usando servidor FTP existente."
         echo "Usuario: $FTP_USER"
         echo "Contraseña: $FTP_PASSWORD"
-    else
-        echo "Por favor especifica 'install' para instalar ftp server en local, 'none' sin instalar, o 'usuario:contraseña' si ya dispones de un ftp server"
-        exit 1
-    fi
-fi
+        ;;
+esac
 
-if [ "$ffmpeg" = "install" ]; then
-    echo "Instalando ffmpeg.."
-elif [ "$ffmpeg" = "none" ]; then
-    echo "Instalando ffmpeg..."
-else
-    echo "Por favor especifica 'install' o 'none' donde install install ffmpeg y none sin instalar ffmpeg"
-    exit 1
-fi
+# Manejo de ffmpeg
+case "$FFMPEG" in
+    "install")
+        echo "Instalando ffmpeg..."
+        ;;
+    "none")
+        echo "Sin instalar ffmpeg..."
+        ;;
+    *)
+        error_exit "Por favor especifica 'install' o 'none' para ffmpeg."
+        ;;
+esac
 
-if [ "$opencv" = "install" ]; then
-    echo "Instalando opencv.."
-elif [ "$opencv" = "none" ]; then
-    echo "Sin opencv..."
-else
-    echo "Por favor especifica 'install' o 'none' donde install install opencv y none sin instalar opencv"
-    exit 1
-fi
+# Manejo de OpenCV
+case "$OPENCV" in
+    "install")
+        echo "Instalando OpenCV..."
+        ;;
+    "none")
+        echo "Sin OpenCV..."
+        ;;
+    *)
+        error_exit "Por favor especifica 'install' o 'none' para OpenCV."
+        ;;
+esac
 
-if [ "$TensorFlow" = "install" ]; then
-    echo "Instalando TensorFlow.."
-elif [ "$TensorFlow" = "none" ]; then
-    echo "Instalando TensorFlow.."
-else
-    echo "Por favor especifica 'install' o 'none' donde install install TensorFlow y none sin instalar TensorFlow"
-    exit 1
-fi
+# Manejo de TensorFlow
+case "$TENSORFLOW" in
+    "install")
+        echo "Instalando TensorFlow..."
+        ;;
+    "none")
+        echo "Sin TensorFlow..."
+        ;;
+    *)
+        error_exit "Por favor especifica 'install' o 'none' para TensorFlow."
+        ;;
+esac
+
+# Continuar con la lógica adicional si es necesario...
+
+
 
 sudo apt-get update
 sudo apt-get -y install ca-certificates curl
@@ -174,7 +207,13 @@ sort /etc/apt/sources.list | uniq -d >/tmp/sources.list.uniq
 
 # Reemplazar el archivo sources.list con la versión depurada
 mv /tmp/sources.list.uniq /etc/apt/sources.list
+# Eliminar líneas duplicadas
+sed -i 'd/^\s*\#/g' /etc/apt/sources.list # Eliminar líneas de comentario
+sed -i 'd/\s*$/g' /etc/apt/sources.list   # Eliminar líneas vacías
+sort /etc/apt/sources.list | uniq -d >/tmp/sources.list.uniq
 
+# Reemplazar el archivo sources.list con la versión depurada
+mv /tmp/sources.list.uniq /etc/apt/sources.list
 # Actualizar la caché de paquetes
 sudo apt update
 
@@ -199,13 +238,7 @@ echo "Instalando Nginx..."
 # Crear una copia de seguridad del archivo sources.list
 cp /etc/apt/sources.list /etc/apt/sources.list.bak
 
-# Eliminar líneas duplicadas
-sed -i 'd/^\s*\#/g' /etc/apt/sources.list # Eliminar líneas de comentario
-sed -i 'd/\s*$/g' /etc/apt/sources.list   # Eliminar líneas vacías
-sort /etc/apt/sources.list | uniq -d >/tmp/sources.list.uniq
 
-# Reemplazar el archivo sources.list con la versión depurada
-mv /tmp/sources.list.uniq /etc/apt/sources.list
 
 # Actualizar la caché de paquetes
 sudo apt update
@@ -1166,7 +1199,6 @@ max_connections 500000
 max_inflight_messages 20000
 max_queued_messages 100000
 autosave_interval 600
-max_connections_per_client 1000  # Ajusta este valor según sea necesario
 
 listener 8083 0.0.0.0
 protocol websockets
@@ -1599,6 +1631,8 @@ elif [ "$INSTALL" != "" ]; then
     echo 'dar permiso composer root y instalar y actualizar'
     export COMPOSER_ALLOW_SUPERUSER=1
     /usr/local/bin/composer update
+    /usr/bin/npm run dev
+    /usr/bin/npm run prod
     /usr/bin/npm run build
 
 

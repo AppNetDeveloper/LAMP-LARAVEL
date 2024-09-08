@@ -1634,22 +1634,6 @@ elif [ "$INSTALL" != "" ]; then
     /usr/bin/npm run dev
     /usr/bin/npm run prod
     /usr/bin/npm run build
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     
     echo 'dar los permisos necesario'
     cd storage || exit
@@ -1666,6 +1650,14 @@ elif [ "$INSTALL" != "" ]; then
     sudo chmod 777 /var/www/html/storage/framework/views
 
   #  sudo rm -rf .git
+sudo chown -R :nginx /var/www/html
+sudo chown -R :www-data /var/www/html
+sudo chmod -R g+rwx /var/www/html
+sudo chown -R :nginx /var/www/html
+sudo chmod -R g+rwx /var/www/html
+sudo apt -y purge apache
+sudo apt -y purge apache2
+sudo apt -y autoremove
 
     sudo apt-get install -y supervisor
     sudo systemctl enable supervisor
@@ -1685,14 +1677,7 @@ elif [ "$INSTALL" != "" ]; then
     sudo supervisorctl restart all
 fi
 
-sudo chown -R :nginx /var/www/html
-sudo chown -R :www-data /var/www/html
-sudo chmod -R g+rwx /var/www/html
-sudo chown -R :nginx /var/www/html
-sudo chmod -R g+rwx /var/www/html
-sudo apt -y purge apache
-sudo apt -y purge apache2
-sudo apt -y autoremove
+
 
 if [ "$DB" = "none" ]; then
     echo 'Sin anadir MariaDb '

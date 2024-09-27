@@ -1193,9 +1193,9 @@ sudo apt-get install erlang
 wget https://github.com/vernemq/vernemq/releases/download/2.0.1/vernemq-2.0.1.jammy.x86_64.deb
  sudo dpkg -i  vernemq-2.0.1.jammy.x86_64.deb
 
-
-echo "Configurando vernemq."
-cat <<EOL | sudo tee /etc/vernemq/vernemq.conf
+# Configurar el archivo de configuración de vernemq
+echo "Configurando VerneMQ."
+cat <<EOL | sudo tee -a /etc/vernemq/vernemq.conf
 accept_eula = yes
 max_inflight_messages = 200
 max_online_messages = 100000
@@ -1206,6 +1206,7 @@ listener.ws.default = 0.0.0.0:8083
 allow_anonymous = on
 
 EOL
+
 
 
 # Reiniciar el servicio Mosquitto

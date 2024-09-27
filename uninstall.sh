@@ -163,10 +163,9 @@ echo "Desinstalando CUPS..."
     sudo rm -rf /var/lib/cups
 
     echo "Desinstalando Mosquitto..."
-    sudo apt purge -y mosquitto mosquitto-clients
+    sudo apt purge -y vernemq mosquitto-clients
     echo "Eliminando archivos de configuración de Mosquitto..."
-    sudo rm -rf /etc/mosquitto
-    sudo rm -rf /var/lib/mosquitto
+ 
 
 echo "Desinstalando Supervisor y borrando archivos de configuración..."
     sudo apt-get purge -y supervisor

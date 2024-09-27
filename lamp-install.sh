@@ -12,7 +12,7 @@ FTP="$5"
 FFMPEG="$6"
 OPENCV="$7"
 TENSORFLOW="$8"
-VPN_IP_OPEN_CSF="$9"
+VpnIpOpenCsf="$9"
 DOMAIN="${10}"
 CUPS_SERVER="${11}"
 MQTT="${12}"
@@ -1188,31 +1188,31 @@ then
 
 # Instalar Mosquitto y el cliente Mosquitto
 echo "Instalando Mosquitto y el cliente..."
-sudo apt install -y mosquitto mosquitto-clients
+sudo apt install -y  mosquitto-clients
+sudo apt-get install erlang 
+wget https://github.com/vernemq/vernemq/releases/download/2.0.1/vernemq-2.0.1.jammy.x86_64.deb
+ sudo dpkg -i  vernemq-2.0.1.jammy.x86_64.deb
 
-echo "Configurando Mosquitto en /etc/mosquitto/conf.d/default.conf..."
-cat <<EOL | sudo tee /etc/mosquitto/conf.d/default.conf
-allow_anonymous true
 
-listener 1883 0.0.0.0
-max_connections 500000
-max_inflight_messages 20000
-max_queued_messages 100000
-autosave_interval 600
+echo "Configurando vernemq."
+cat <<EOL | sudo tee /etc/vernemq/vernemq.conf
+accept_eula = yes
+max_inflight_messages = 200
+max_online_messages = 100000
+max_offline_messages = 100000
+listener.tcp.name = 0.0.0.0:1883
+listener.tcp.default = 0.0.0.0:1884
+listener.ws.default = 0.0.0.0:8083
+allow_anonymous = on
 
-listener 8083 0.0.0.0
-protocol websockets
 EOL
 
 
 # Reiniciar el servicio Mosquitto
-echo "Reiniciando el servicio Mosquitto..."
-sudo systemctl restart mosquitto
+echo "Reiniciando el servicio vernemq."
+sudo systemctl restart vernemq
 
-# Habilitar Mosquitto para que se inicie al arrancar el sistema
-sudo systemctl enable mosquitto
-
-echo "Instalación y configuración de Mosquitto completadas."
+echo "Instalación y configuración devernemq completadas."
 fi
 
 # install cups
@@ -1367,9 +1367,9 @@ bind-address = 0.0.0.0
 # Configuraciones de rendimiento
 innodb_buffer_pool_size = '${RAM}G'  # Aumentado para usar más RAM siendo el maximo de 80% del servidor CALCULO AUTOMATICO
 innodb_log_file_size = 1G  
-max_connections = 200  # Aumentado para permitir más conexiones
-query_cache_size = 256M  # Aumentado para cachear más consultas
-join_buffer_size = 256M  # Aumentado para consultas JOIN más grandes
+max_connections = 2000  # Aumentado para permitir más conexiones
+query_cache_size = 512M  # Aumentado para cachear más consultas
+join_buffer_size = 512M  # Aumentado para consultas JOIN más grandes
 tmp_table_size = 1024M  # Aumentado para tablas temporales más grandes
 max_heap_table_size = 1024M  # Aumentado para tablas en memoria más grandes
 
@@ -1379,7 +1379,7 @@ innodb_read_io_threads = 64
 innodb_write_io_threads = 64  
 innodb_flush_log_at_trx_commit = 1  # Cambiado a 1 para mayor integridad de los datos
 innodb_flush_method = O_DIRECT  
-innodb_log_buffer_size = 128M  # Aumentado para más buffer de registro
+innodb_log_buffer_size = 1280M  # Aumentado para más buffer de registro
 thread_cache_size = 100  # Aumentado para cachear más hilos
 
 # Configuraciones de logs
@@ -1567,7 +1567,7 @@ elif [ "$INSTALL" != "" ]; then
     cd /var/www/html/ || exit
 
     echo 'clonar proyecto desde git'
-    git clone -b "$INSTALL" "$GitUrl" /var/www/html >/var/www/log.txt 2>&1
+    git clone -b "$INSTALL" "$GIT_URL" /var/www/html >/var/www/log.txt 2>&1
     echo 'instalar .env'
     cp .env.example .env
     # Ruta del archivo .env
@@ -1678,6 +1678,20 @@ sudo apt -y autoremove
 fi
 
 
+# Definir el usuario y el comando que permitiremos sin contraseña
+USER="www-data"
+COMMAND="/usr/bin/supervisorctl restart all"
+
+# Verificar si la línea ya está en sudoers
+if sudo grep -Fxq "$USER ALL=(ALL) NOPASSWD: $COMMAND" /etc/sudoers
+then
+    echo "La entrada ya está en sudoers. No se requiere ninguna acción."
+else
+    # Añadir la entrada a sudoers
+    echo "Añadiendo la entrada a sudoers..."
+    echo "$USER ALL=(ALL) NOPASSWD: $COMMAND" | sudo EDITOR='tee -a' visudo
+    echo "Entrada añadida correctamente a sudoers."
+fi
 
 if [ "$DB" = "none" ]; then
     echo 'Sin anadir MariaDb '

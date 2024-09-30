@@ -494,7 +494,7 @@ server {
         location ~ \\.php$ {
                 include snippets/fastcgi-php.conf;
 
-                fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+                fastcgi_pass unix:/run/php/php8.4-fpm.sock;
         #       fastcgi_pass 127.0.0.1:9000;
         }
 }
@@ -522,7 +522,7 @@ server {
         location ~ \\.php$ {
                 include snippets/fastcgi-php.conf;
 
-                fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+                fastcgi_pass unix:/run/php/php8.4-fpm.sock;
         #       fastcgi_pass 127.0.0.1:9000;
         }
 }
@@ -928,66 +928,66 @@ sudo apt-get -y autoremove # Uncomment this line to remove packages that are now
 systemctl daemon-reload
 
 # Instalar PHP y las extensiones necesarias
-sudo apt -y install php8.3-phar
-sudo apt -y install php8.3-common
-sudo apt -y install php8.3
-sudo apt -y install php8.3-fpm
-sudo apt -y install php8.3-mysql
-sudo apt -y install php8.3-curl
-sudo apt -y install php8.3-gd
-sudo apt -y install php8.3-imagick
-sudo apt -y install php8.3-intl
-sudo apt -y install php8.3-mysql
-sudo apt -y install php8.3-mbstring
-sudo apt -y install php8.3-xml
-sudo apt -y install php8.3-mcrypt
+sudo apt -y install php8.4-phar
+sudo apt -y install php8.4-common
+sudo apt -y install php8.4
+sudo apt -y install php8.4-fpm
+sudo apt -y install php8.4-mysql
+sudo apt -y install php8.4-curl
+sudo apt -y install php8.4-gd
+sudo apt -y install php8.4-imagick
+sudo apt -y install php8.4-intl
+sudo apt -y install php8.4-mysql
+sudo apt -y install php8.4-mbstring
+sudo apt -y install php8.4-xml
+sudo apt -y install php8.4-mcrypt
 sudo apt -y install php-mcrypt
-sudo apt -y install php8.3-zip
-sudo apt -y install php8.3-ldap
-sudo apt -y install php8.3-sybase
-sudo apt -y install php8.3-opcache
-sudo apt -y install php8.3-pgsql
-sudo apt -y install php8.3-redis
-sudo apt -y install php8.3-common
-sudo apt -y install php8.3
-sudo apt -y install php8.3-cli
-sudo apt -y install php8.3-curl
-sudo apt -y install php8.3-bz2
-sudo apt -y install php8.3-xml
-sudo apt -y install php8.3-mysql
-sudo apt -y install php8.3-gd
-sudo apt -y install php8.3-imagick
+sudo apt -y install php8.4-zip
+sudo apt -y install php8.4-ldap
+sudo apt -y install php8.4-sybase
+sudo apt -y install php8.4-opcache
+sudo apt -y install php8.4-pgsql
+sudo apt -y install php8.4-redis
+sudo apt -y install php8.4-common
+sudo apt -y install php8.4
+sudo apt -y install php8.4-cli
+sudo apt -y install php8.4-curl
+sudo apt -y install php8.4-bz2
+sudo apt -y install php8.4-xml
+sudo apt -y install php8.4-mysql
+sudo apt -y install php8.4-gd
+sudo apt -y install php8.4-imagick
 sudo apt -y install php-bz2
-sudo apt -y install php8.3-mbstring
-sudo apt -y install php8.3-intl
-sudo apt -y install php8.3-opcache
-sudo apt -y install php8.3-curl
+sudo apt -y install php8.4-mbstring
+sudo apt -y install php8.4-intl
+sudo apt -y install php8.4-opcache
+sudo apt -y install php8.4-curl
 sudo apt -y install php-curl
 sudo apt -y install php-zip
-sudo apt -y install php8.3-zip
+sudo apt -y install php8.4-zip
 sudo apt -y install php-ssh2
-sudo apt -y install php8.3-ssh2
+sudo apt -y install php8.4-ssh2
 sudo apt -y install php-xmlrpc
 sudo apt -y install php-xml
 sudo apt -y install php-curl
 sudo apt -y install php-mbstring
-sudo apt -y install php8.3-fpm
-sudo apt -y install php8.3-curl
+sudo apt -y install php8.4-fpm
+sudo apt -y install php8.4-curl
 
-sudo systemctl restart php8.3-fpm
-sudo systemctl enable php8.3-fpm
+sudo systemctl restart php8.4-fpm
+sudo systemctl enable php8.4-fpm
 
 sudo a2disconf php*-fpm
 # On Apache: Enable PHP 8.3 FPM
-sudo a2enconf php8.3-fpm
+sudo a2enconf php8.4-fpm
 
 sudo apt-get install php-pear
-sudo apt-get install php8.3-pear
+sudo apt-get install php8.4-pear
 sudo pecl channel-update pecl.php.net
 
-sudo systemctl restart php8.3-fpm && sudo systemctl enable php8.3-fpm
+sudo systemctl restart php8.4-fpm && sudo systemctl enable php8.4-fpm
 
-sudo pear config-set php_bin /usr/bin/php8.3
+sudo pear config-set php_bin /usr/bin/php8.4
 
 # Añadir la clave de Microsoft
 sudo curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
@@ -1014,9 +1014,9 @@ sudo pecl install pdo_sqlsrv
 sudo pecl install sqlsrv
 
 # Habilitar las extensiones PHP para Microsoft SQL
-echo "; priority=20\nextension=sqlsrv.so\n" >/etc/php/8.3/mods-available/sqlsrv.ini
-echo "; priority=30\nextension=pdo_sqlsrv.so\n" >/etc/php/8.3/mods-available/pdo_sqlsrv.ini
-sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
+echo "; priority=20\nextension=sqlsrv.so\n" >/etc/php/8.4/mods-available/sqlsrv.ini
+echo "; priority=30\nextension=pdo_sqlsrv.so\n" >/etc/php/8.4/mods-available/pdo_sqlsrv.ini
+sudo phpenmod -v 8.4 sqlsrv pdo_sqlsrv
 
 sudo apt -y install gcc
 sudo apt -y install -y g++
@@ -1031,54 +1031,57 @@ sudo apt -y install curl gnupg2 ca-certificates lsb-release ubuntu-keyring
 # Reiniciar Nginx
 systemctl restart nginx
 # Añade las líneas al archivo www.conf
-echo "pm.max_children = 250" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "pm.max_requests = 500" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "pm.start_servers = 50" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "pm.min_spare_servers = 50" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "pm.max_spare_servers = 200" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "process.priority = -19" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
-echo "php_value[memory_limit] = 512M" | sudo tee -a /etc/php/8.3/fpm/pool.d/www.conf
+echo "pm.max_children = 250" | sudo tee -a /etc/php/8.4/fpm/pool.d/www.conf
+echo "pm.max_requests = 500" | sudo tee -a /etc/php/8.4/fpm/pool.d/www.conf
+echo "pm.start_servers = 50" | sudo tee -a /etc/php/8.4/fpm/pool.d/www.conf
+echo "pm.min_spare_servers = 50" | sudo tee -a /etc/php/8.4/fpm/pool.d/www.conf
+echo "pm.max_spare_servers = 200" | sudo tee -a /etc/php/8.4/fpm/pool.d/www.conf
+echo "process.priority = -19" | sudo tee -a /etc/php/8.4/fpm/pool.d/www.conf
+echo "php_value[memory_limit] = 512M" | sudo tee -a /etc/php/8.4/fpm/pool.d/www.conf
 
 # Añade las líneas al archivo php.ini
 #memory_limit = -1 si le quieres dar maximo de ram
-echo "memory_limit=4096M" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "date.timezone=Europe/Madrid" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "post_max_size=20000M" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "upload_max_filesize=20000M" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "max_execution_time=180000" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "max_input_time=12000" | sudo tee -a /etc/php/8.3/cli/php.ini
+echo "memory_limit=4096M" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "date.timezone=Europe/Madrid" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "post_max_size=20000M" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "upload_max_filesize=20000M" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "max_execution_time=180000" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "max_input_time=12000" | sudo tee -a /etc/php/8.4/cli/php.ini
 
 #anadir zend para mejor velocidad en web server
-echo "[opcache]" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "zend_extension=opcache.so" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "opcache.enable=1" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "opcache.memory_consumption=128" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "opcache.interned_strings_buffer=8" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "opcache.max_accelerated_files=4000" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "opcache.revalidate_freq=60" | sudo tee -a /etc/php/8.3/cli/php.ini
-echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.3/cli/php.ini
+echo "[opcache]" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "zend_extension=opcache.so" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "opcache.enable=1" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "opcache.memory_consumption=128" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "opcache.interned_strings_buffer=8" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "opcache.max_accelerated_files=4000" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "opcache.revalidate_freq=60" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.4/cli/php.ini
 
 # Añade las líneas al archivo php.ini
-echo "memory_limit=1024M" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "date.timezone=Europe/Madrid" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "post_max_size=20000M" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "upload_max_filesize=20000M" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "max_execution_time=180000" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "max_input_time=12000" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "memory_limit=1024M" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "date.timezone=Europe/Madrid" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "post_max_size=20000M" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "upload_max_filesize=20000M" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "max_execution_time=180000" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "max_input_time=12000" | sudo tee -a /etc/php/8.4/fpm/php.ini
 
 #anadir zend para mejor velocidad en web server
-echo "[opcache]" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "zend_extension=opcache.so" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "opcache.enable=1" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "opcache.memory_consumption=128" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "opcache.interned_strings_buffer=8" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "opcache.max_accelerated_files=4000" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "opcache.revalidate_freq=60" | sudo tee -a /etc/php/8.3/fpm/php.ini
-echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.3/fpm/php.ini
+echo "[opcache]" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "zend_extension=opcache.so" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "opcache.enable=1" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "opcache.memory_consumption=128" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "opcache.interned_strings_buffer=8" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "opcache.max_accelerated_files=4000" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "opcache.revalidate_freq=60" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.4/fpm/php.ini
 
-# Reinicia el servicio php8.3-fpm y apache
-sudo service php8.3-fpm restart
+# Reinicia el servicio php8.4-fpm y apache
+sudo service php8.4-fpm restart
 sudo systemctl restart nginx
+
+# usa esto para seleccionar php :   sudo update-alternatives --config php
+
 
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&
     sudo apt-get install -y nodejs
@@ -1212,6 +1215,7 @@ EOL
 # Reiniciar el servicio Mosquitto
 echo "Reiniciando el servicio vernemq."
 sudo systemctl restart vernemq
+sudo systemctl enable vernemq
 
 echo "Instalación y configuración devernemq completadas."
 fi

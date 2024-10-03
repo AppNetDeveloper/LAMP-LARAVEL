@@ -1076,6 +1076,7 @@ echo "opcache.max_accelerated_files=4000" | sudo tee -a /etc/php/8.4/fpm/php.ini
 echo "opcache.revalidate_freq=60" | sudo tee -a /etc/php/8.4/fpm/php.ini
 echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.4/fpm/php.ini
 
+sudo -y remove apache2
 # Reinicia el servicio php8.4-fpm y apache
 sudo service php8.4-fpm restart
 sudo systemctl restart nginx

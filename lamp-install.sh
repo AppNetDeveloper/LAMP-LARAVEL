@@ -146,35 +146,22 @@ echo \
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Obtener la arquitectura de la CPU
-ARCH=$(uname -m)
-
-if [ "$ARCH" = "x86_64" ]; then
-    echo "**Añadiendo repositorios Debian nonfree para x86_64 (Debian 12)**"
-
-    # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free" al archivo /etc/apt/sources.list
-    echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
-
-    # Actualizar la lista de paquetes
-    sudo apt update
-
-elif [ "$ARCH" = "aarch64" ]; then
-    echo "**Añadiendo repositorios Debian nonfree para aarch64 (Debian 12)**"
-
-    # Añadir la línea "deb http://deb.debian.org/debian bookworm main contrib non-free"  al archivo /etc/apt/sources.list
-    echo "deb http://deb.debian.org/debian bookworm main contrib non-free" | sudo tee -a /etc/apt/sources.list
-    echo "deb [arch=armhf] http://httpredir.debian.org/debian/ buster main contrib non-free" | sudo tee -a /etc/apt/sources.list
-    # Actualizar la lista de paquetes
-    sudo apt update
-
-else
-    echo "**Arquitectura de CPU no compatible: $ARCH**"
-    echo "Este script solo funciona en sistemas x86_64 o aarch64."
-    exit 1
-fi
-
+# Python:
+sudo apt-get install -y python-dev
+sudo apt-get install -y python-tk
+sudo apt-get install -y python-numpy
+sudo apt-get install -y python3-dev
+sudo apt-get install -y python3-tk
+sudo apt-get install -y python3-numpy 
 
 echo " python necesarios"
+sudo wget https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+
+sudo apt-get install -y software-properties-common
+sudo apt-add-repository universe
+sudo apt-get update
+sudo apt-get install python3-pip
 
 pip install pymodbus --break-system-packages
 pip install requests --break-system-packages
@@ -248,11 +235,13 @@ sudo apt -y purge apache2
 sudo apt -y purge nginx
 
 sudo apt-get install build-essential libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev openssl libgd-dev libgeoip-dev libperl-dev wget
-
+sudo apt -y install libpcre3 libpcre3-dev
+sudo apt -y install zlib1g zlib1g-dev
+sudo apt -y install libssl-dev
 sudo apt -y install wget
 
-wget http://nginx.org/download/nginx-1.27.0.tar.gz
-tar -zxvf nginx-1.27.0.tar.gz
+wget http://nginx.org/download/nginx-1.27.2.zip
+tar -zxvf nginx-1.27.2.tar.gz
 mkdir /etc/nginx
 cd nginx-1.27.0 || exit
 mv * /etc/nginx/
@@ -997,7 +986,7 @@ sudo pecl install sqlsrv
 sudo pecl install pdo_sqlsrv
 sudo pecl install pdo_mysql
 sudo pecl install pdo_pgsql
-sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv
+sudo phpenmod -v 8.4 sqlsrv pdo_sqlsrv
 
 sudo curl https://packages.microsoft.com/config/debian/12/prod.list >/etc/apt/sources.list.d/mssql-release.list
 sudo curl https://packages.microsoft.com/config/debian/11/prod.list >/etc/apt/sources.list.d/mssql-release.list
@@ -1043,10 +1032,10 @@ echo "php_value[memory_limit] = 512M" | sudo tee -a /etc/php/8.4/fpm/pool.d/www.
 #memory_limit = -1 si le quieres dar maximo de ram
 echo "memory_limit=4096M" | sudo tee -a /etc/php/8.4/cli/php.ini
 echo "date.timezone=Europe/Madrid" | sudo tee -a /etc/php/8.4/cli/php.ini
-echo "post_max_size=20000M" | sudo tee -a /etc/php/8.4/cli/php.ini
-echo "upload_max_filesize=20000M" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "post_max_size=200000M" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "upload_max_filesize=200000M" | sudo tee -a /etc/php/8.4/cli/php.ini
 echo "max_execution_time=180000" | sudo tee -a /etc/php/8.4/cli/php.ini
-echo "max_input_time=12000" | sudo tee -a /etc/php/8.4/cli/php.ini
+echo "max_input_time=120000" | sudo tee -a /etc/php/8.4/cli/php.ini
 
 #anadir zend para mejor velocidad en web server
 echo "[opcache]" | sudo tee -a /etc/php/8.4/cli/php.ini
@@ -1061,10 +1050,10 @@ echo "opcache.fast_shutdown=1" | sudo tee -a /etc/php/8.4/cli/php.ini
 # Añade las líneas al archivo php.ini
 echo "memory_limit=1024M" | sudo tee -a /etc/php/8.4/fpm/php.ini
 echo "date.timezone=Europe/Madrid" | sudo tee -a /etc/php/8.4/fpm/php.ini
-echo "post_max_size=20000M" | sudo tee -a /etc/php/8.4/fpm/php.ini
-echo "upload_max_filesize=20000M" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "post_max_size=200000M" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "upload_max_filesize=200000M" | sudo tee -a /etc/php/8.4/fpm/php.ini
 echo "max_execution_time=180000" | sudo tee -a /etc/php/8.4/fpm/php.ini
-echo "max_input_time=12000" | sudo tee -a /etc/php/8.4/fpm/php.ini
+echo "max_input_time=120000" | sudo tee -a /etc/php/8.4/fpm/php.ini
 
 #anadir zend para mejor velocidad en web server
 echo "[opcache]" | sudo tee -a /etc/php/8.4/fpm/php.ini
@@ -1190,12 +1179,16 @@ then
     echo "Instalando cMosquitto.."
 
 
-# Instalar Mosquitto y el cliente Mosquitto
+# Instalar Mosquitto y el cliente Mosquitto en Ubuntu, ahora instalamos la version 2.0.1
 echo "Instalando Mosquitto y el cliente..."
 sudo apt install -y  mosquitto-clients
 sudo apt-get install erlang 
+sudo apt install libsnappy1v5
+
 wget https://github.com/vernemq/vernemq/releases/download/2.0.1/vernemq-2.0.1.jammy.x86_64.deb
- sudo dpkg -i  vernemq-2.0.1.jammy.x86_64.deb
+wget  https://github.com/vernemq/vernemq/releases/download/2.0.1/vernemq-2.0.1.jammy.arm64.deb
+sudo dpkg -i  vernemq-2.0.1.jammy.x86_64.deb
+sudo dpkg -i  vernemq-2.0.1.jammy.arm64.deb
 
 # Configurar el archivo de configuración de vernemq
 echo "Configurando VerneMQ."
@@ -1363,33 +1356,53 @@ EOF
     # Hacemos una copia de seguridad del archivo original
     sudo cp /etc/mysql/mariadb.conf.d/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf.backup
 
-    RAM=$(awk '/MemTotal/ {printf("%.0f\n", $2/1024/1024*0.8)}' /proc/meminfo)
+# Calcula el 80% de la memoria RAM total para usar en InnoDB Buffer Pool Size
+RAM=$(awk '/MemTotal/ {printf("%.0f", $2/1024/1024 * 0.8)}' /proc/meminfo)
 
-    # Añadimos las nuevas configuraciones al archivo
-    sudo bash -c "cat >> /etc/mysql/mariadb.conf.d/50-server.cnf" <<EOF
+# Calcula el número de núcleos de CPU para ajustar los hilos de I/O de InnoDB
+CPU_CORES=$(nproc)
 
-bind-address = 0.0.0.0
+# Añade la configuración automática al final del archivo existente
+sudo bash -c "cat >> /etc/mysql/mariadb.conf.d/50-server.cnf" <<EOF
+
+# Configuración de MySQL/MariaDB optimizada automáticamente
 [mysqld]
 # Configuraciones de rendimiento
-innodb_buffer_pool_size = '${RAM}G'  # Aumentado para usar más RAM siendo el maximo de 80% del servidor CALCULO AUTOMATICO
-innodb_log_file_size = 1G  
-max_connections = 2000  # Aumentado para permitir más conexiones
-query_cache_size = 512M  # Aumentado para cachear más consultas
-join_buffer_size = 512M  # Aumentado para consultas JOIN más grandes
-tmp_table_size = 1024M  # Aumentado para tablas temporales más grandes
-max_heap_table_size = 1024M  # Aumentado para tablas en memoria más grandes
+innodb_buffer_pool_size = ${RAM}G  # Usando el 80% de la RAM total
+innodb_log_file_size = 1G          # Moderado para tiempos de recuperación
+innodb_log_buffer_size = 64M       # Buffer de registro ajustado para carga moderada
 
-innodb_io_capacity = 5000  # Aumentado para permitir más I/O por segundo
-innodb_io_capacity_max = 10000  # Aumentado para permitir más I/O máximo por segundo
-innodb_read_io_threads = 64  
-innodb_write_io_threads = 64  
-innodb_flush_log_at_trx_commit = 1  # Cambiado a 1 para mayor integridad de los datos
-innodb_flush_method = O_DIRECT  
-innodb_log_buffer_size = 1280M  # Aumentado para más buffer de registro
-thread_cache_size = 100  # Aumentado para cachear más hilos
+# Configuración de conexiones
+max_connections = 100              # Ajustado para uso moderado
+thread_cache_size = 50             # Tamaño moderado para reutilización de hilos
 
-# Configuraciones de logs
-expire_logs_days = 10
+# Caché de consultas
+query_cache_size = 32M             # Ajustado para reducir carga en CPU
+query_cache_type = 1               # Activado para rendimiento en lecturas
+
+# Buffers y memoria para consultas JOIN y tablas temporales
+join_buffer_size = 128M            # Para consultas JOIN sin sobrecargar la RAM
+tmp_table_size = 128M              # Tamaño moderado para tablas temporales en memoria
+max_heap_table_size = 128M         # Igual que tmp_table_size
+
+# Configuración de I/O de InnoDB
+innodb_io_capacity = 1500          # Capacidad de I/O moderada para balancear carga en CPU y disco
+innodb_io_capacity_max = 3000      # Máximo de I/O ajustado
+innodb_read_io_threads = $((CPU_CORES / 2))   # Hilos de I/O en función de los núcleos de CPU
+innodb_write_io_threads = $((CPU_CORES / 2))  # Ajuste basado en la CPU disponible
+innodb_flush_log_at_trx_commit = 1            # Integridad de datos
+innodb_flush_method = O_DIRECT                # Evita duplicación de caché entre InnoDB y sistema operativo
+
+# Configuración de logs
+expire_logs_days = 10             # Retiene logs durante 10 días
+
+# Configuración de Seguridad y Rendimiento
+performance_schema = ON               # Activa el Performance Schema
+aria_pagecache_buffer_size = 128M     # Caché para Aria
+#skip-name-resolve                     # Desactiva resolución de nombres para mejorar rendimiento en conexiones IP
+
+# Dirección de conexión
+bind-address = 0.0.0.0
 EOF
 
     sudo mkdir /var/www/phpmyadmin/tmp

@@ -157,11 +157,12 @@ sudo apt-get install -y python3-numpy
 echo " python necesarios"
 sudo wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
+sudo python3 get-pip.py --break-system-packages
 
 sudo apt-get install -y software-properties-common
-sudo apt-add-repository universe
+sudo apt-add-repository -y universe
 sudo apt-get update
-sudo apt-get install python3-pip
+sudo apt-get install -y python3-pip
 
 pip install pymodbus --break-system-packages
 pip install requests --break-system-packages
@@ -180,6 +181,12 @@ pip3 install Flask --break-system-packages
 pip install paho-mqtt pymodbus --break-system-packages
 pip install flask-cors --break-system-packages
 pip install python-dotenv --break-system-packages
+pip3 install smbus2 --break-system-packages
+pip3 install vl53l1x --break-system-packages
+pip3 install paho-mqtt --break-system-packages
+pip3 install adafruit-circuitpython-vl53l1x  --break-system-packages
+
+
 
 
 echo "**Repositorios Debian nonfree añadidos correctamente (Debian 12)**"
@@ -240,10 +247,12 @@ sudo apt -y install zlib1g zlib1g-dev
 sudo apt -y install libssl-dev
 sudo apt -y install wget
 
-wget http://nginx.org/download/nginx-1.27.2.zip
+wget http://nginx.org/download/nginx-1.27.2.tar.gz
+sudo rm -rf nginx-1.27.2
 tar -zxvf nginx-1.27.2.tar.gz
+sudo rm -rf /etc/nginx
 mkdir /etc/nginx
-cd nginx-1.27.0 || exit
+cd nginx-1.27.2 || exit
 mv * /etc/nginx/
 cd /etc/nginx/ || exit
 
@@ -1182,8 +1191,8 @@ then
 # Instalar Mosquitto y el cliente Mosquitto en Ubuntu, ahora instalamos la version 2.0.1
 echo "Instalando Mosquitto y el cliente..."
 sudo apt install -y  mosquitto-clients
-sudo apt-get install erlang 
-sudo apt install libsnappy1v5
+sudo apt-get -y install erlang 
+sudo apt -y  install libsnappy1v5
 
 wget https://github.com/vernemq/vernemq/releases/download/2.0.1/vernemq-2.0.1.jammy.x86_64.deb
 wget  https://github.com/vernemq/vernemq/releases/download/2.0.1/vernemq-2.0.1.jammy.arm64.deb
@@ -1713,17 +1722,18 @@ else
 fi
 
 if [ "$DB" = "none" ]; then
-    echo 'Sin anadir MariaDb '
-elif [ "$DB" = "appnetd_cloud" ]; then
-    echo 'MariaDb agregada con exito root password: '"$MARIADBPASSWORD"' donde el root tiene la opcion de remote host'
+    echo 'Sin añadir MariaDB'
+elif [ -n "$DB" ]; then  # Verificación más robusta de variable no vacía
+    echo "MariaDB agregada con éxito. Contraseña de root: $MARIADBPASSWORD"
     # Mostrar usuario y contraseña generados
-    echo "Nuevo usuario y contraseña generado para la ${DB}"
-    echo "Usuario: ${NEW_USERNAME}"
-    echo "Contraseña: ${NEW_PASSWORD}"
+    echo "Nuevo usuario y contraseña generados para la base de datos: $DB"
+    echo "Usuario: $NEW_USERNAME"
+    echo "Contraseña: $NEW_PASSWORD"
 else
-    echo "Por favor especifica none o una tabla de MariaDB en instalacion "
+    echo "Por favor especifica 'none' o una base de datos de MariaDB durante la instalación."
     exit 1
 fi
+
 
 echo "Contraseña FTP : $FTP_PASSWORD"
 echo "Username FTP : $FTP_USER"
